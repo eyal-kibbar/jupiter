@@ -1,0 +1,161 @@
+#include "ganymede.h"
+#include "gmd_platform.h"
+#include "gmd_sched.h"
+#include "gmd_kern.h"
+
+#include <stdio.h>
+#include <setjmp.h>
+
+#include <avr/sleep.h>
+#include <avr/power.h>
+
+#include <avr/io.h>
+#include <avr/interrupt.h>
+
+
+struct sched_context_s {
+    uint8_t  regs[16];
+    uint16_t bp;
+    uint16_t sp;
+    uint8_t sreg;
+    uint16_t pc;
+} __attribute__((packed));
+
+
+static volatile uint8_t gmd_timer_tick;
+
+
+/**
+ * sched
+ * ======================================== 
+ **/
+
+void gmd_platform_context_create(
+    sched_context_t ctx,
+    void (*func)(),
+    void* stack,
+    size_t stack_size)
+{
+    
+    setjmp(*(jmp_buf*)ctx);
+    ctx->bp = 0;
+    ctx->sp = (uint16_t)stack + stack_size - sizeof(uint16_t);
+    ctx->pc = (uint16_t)func;
+}
+
+void gmd_platform_context_swap(
+    sched_context_t save,
+    sched_context_t load)
+{
+    if (0 == setjmp(*(jmp_buf*)save)) {
+        longjmp(*(jmp_buf*)load, 1);
+    }
+}
+
+/**
+ * sleep
+ * ========================================
+ **/
+
+void gmd_platform_sleep()
+{
+    cli();
+    // TODO: calculate the best sleep mode
+    set_sleep_mode(SLEEP_MODE_IDLE);
+
+    sleep_enable();
+    sei();
+    sleep_cpu();
+    sleep_disable();
+}
+
+/**
+ * timer
+ * ========================================
+ **/
+
+static void gmd_platform_timer_init()
+{
+    ASSR = _BV(AS2); // set clock to function as realtime hardware clock (RTC)
+    TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // set clock with 1024 prescalar
+    TIMSK2 = _BV(TOIE2); // enable overflow interrupt
+    // clock src is 16MHz,
+    // we prescale it with 1024, that gives us a counter decrement rate of ~16KHz
+    // for every 256 counter decrements we get a tick
+    // that gives us tick rate of ~61Hz, or 1 tick every 16.384 ms
+}
+
+uint8_t gmd_curtick()
+{
+    return gmd_timer_tick;
+}
+
+uint16_t gmd_ticks2ms(uint8_t ticks, uint16_t* out_us)
+{
+    uint16_t ms, us, x;
+    uint16_t ticks16;
+    
+    us = 0;
+    ticks16 = (uint16_t)ticks;
+    ms = ticks16 * 16;
+    
+    // avoid overflow
+    if (170 < ticks16) {
+        ms += 65;  // (170 * 384) / 1000;
+        us = 280; // (170 * 384) % 1000;
+        ticks16 -= 170;
+    }
+    
+    x = ticks16 * 384;
+    ms += x / 1000;
+    us += x - ((x/1000) * 1000);
+    
+    if (NULL != out_us) {
+        *out_us = us;
+    }
+    
+    return ms;
+}
+
+uint16_t gmd_ms2ticks(uint16_t ms, uint16_t* out_us)
+{
+    return 0;
+}
+
+// using timer 2
+ISR(TIMER2_OVF_vect)
+{
+    ++gmd_timer_tick;
+}
+
+
+/**
+ * log
+ * ========================================
+ **/
+
+static int gmd_log_uart_putchar(char c, FILE *stream)
+{
+    gmd_io_tx_t tx = { .isw = 1, .buf = (uint8_t*)&c, .len = 1, .off = 0 };
+    
+    gmd_uart_sg(&tx, 1, 0);
+    return 1;
+}
+
+
+static FILE gmd_log_stream = FDEV_SETUP_STREAM(
+    gmd_log_uart_putchar,
+    NULL,
+    _FDEV_SETUP_WRITE);
+
+void gmd_log_init()
+{
+    stdout = &gmd_log_stream;
+}
+
+
+void gmd_platform_init()
+{
+    gmd_platform_timer_init();
+}
+

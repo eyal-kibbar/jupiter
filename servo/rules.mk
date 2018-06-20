@@ -12,7 +12,7 @@ LOCAL_EXPORT      := $(LOCAL_PATH)/api
 
 LOCAL_DEFINES     := \
 	SERVO_MAX_PIN=16 \
-	LOGGING_ENABLED  \
+	LOG_LEVEL=3  \
 
 
 LOCAL_STATIC_LIBS += ganymede-dbg
@@ -41,7 +41,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := servo-tst
 
 LOCAL_DEFINES     += STACK_SIZE=170
-LOCAL_DEFINES     += LOGGING_ENABLED
+LOCAL_DEFINES     += LOG_LEVEL=3
 
 LOCAL_SRC         += $(LOCAL_PATH)/tst/servo_test.c
 LOCAL_STATIC_LIBS += servo-dbg ganymede-dbg

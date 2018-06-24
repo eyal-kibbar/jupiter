@@ -1,6 +1,6 @@
 
 #include "ganymede.h"
-
+#include "logging.h"
 #include "servo.h"
 #include "servo_platform.h"
 #include "servo_platform_api.h"
@@ -37,8 +37,9 @@ void servo_set(uint8_t pin, uint8_t duty)
     uint16_t mask;
     uint8_t prev;
     
+    LOG_INFO(SERVO, "setting pin %u duty %u", pin, duty);
+    
     servo_platform_cli();
-    //gmd_uart_write("bb\r\n",4);
     
     // remove from sorted list
     if (servo.first_idx == 0) {

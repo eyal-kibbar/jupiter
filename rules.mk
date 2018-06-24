@@ -1,6 +1,33 @@
 
 LOCAL_PATH := $(call my-dir)
 
+# ganymede test
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := gmd-tst
+
+LOCAL_STATIC_LIBS := \
+	ganymede-dbg \
+
+LOCAL_TASKS       := \
+	gmd-tst1 \
+	gmd-tst2 \
+
+
+LOCAL_TARGET      := atmega168
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega328p
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+
+
+
+
+
+
+
 # test debug flavor
 # ========================================
 include $(CLEAR_VARS)

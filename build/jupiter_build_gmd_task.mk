@@ -58,7 +58,6 @@ UNIQUE_TASK_NAME := $(strip $(subst -,_,$(LOCAL_MODULE)))
 
 $(_DIR_OUT)/tsk$(LOCAL_MODULE).o: LOCAL_TARGET := $(LOCAL_TARGET)
 $(_DIR_OUT)/tsk$(LOCAL_MODULE).o: TASK_NAME    := $(UNIQUE_TASK_NAME)
-$(_DIR_OUT)/tsk$(LOCAL_MODULE).o: $(USED_LIBS)
 $(_DIR_OUT)/tsk$(LOCAL_MODULE).o: $(OBJS)
 	$(CC_$(LOCAL_TARGET)) -r -nostdlib $^ -o $@
 	$(OBJCOPY_$(LOCAL_TARGET)) \

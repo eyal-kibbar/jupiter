@@ -27,6 +27,8 @@ static void hexpod_init()
 {
     int i;
     
+    servo_init();
+
     hexpod_load(NULL, 0);
     
     for (i=0; i < HEXPOD_NUM_LEGS; ++i) {

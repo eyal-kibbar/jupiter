@@ -115,5 +115,26 @@ LOCAL_TARGET      := atmega168
 LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
+# hexpod debug flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-hexpod-dbg
 
+LOCAL_STATIC_LIBS := \
+	servo-dbg \
+	srv-dbg \
+	ganymede-dbg \
+
+LOCAL_TASKS       := \
+	hexpod-srv-dbg \
+	hexpod-dbg \
+
+
+LOCAL_TARGET      := atmega328p
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega168
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
 

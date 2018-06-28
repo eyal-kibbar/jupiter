@@ -37,7 +37,7 @@ static struct mpu_reg_set_s mpu_init_cfg[] = {
       | (0 << MPU_PWR_MGMT_2_STBY_XG_SHFT)
       | (0 << MPU_PWR_MGMT_2_STBY_YG_SHFT)
       | (0 << MPU_PWR_MGMT_2_STBY_ZG_SHFT)
-      | (1 << MPU_PWR_MGMT_2_LP_WAKE_CTRL_SHFT) // sampling rate 5 Hz
+      | (0 << MPU_PWR_MGMT_2_LP_WAKE_CTRL_SHFT) // sampling rate 1.25 Hz
     
     },
     
@@ -78,81 +78,38 @@ static uint8_t mpu_regread(uint8_t addr)
     return val;
 }
 
-int16_t mpu_get_temperature()
-{
-    uint8_t addr = MPU_TEMP_OUT_ADDR;
-    int16_t val;
-    float temp;
-    
-    gmd_io_tx_t tx[2] = {
-        { .isw = 1, .buf = &addr, .len = 1, .off = 0 },
-        { .isw = 0, .buf = (uint8_t*)&val,  .len = 2, .off = 0 }
-    };
-    
-    gmd_i2c_sg(MPU_ADDR, tx, 2, 0);
-    
-    val = ntohs(val);
-    
-    LOG_INFO(MPU, "raw temperature (%02x): %04x", addr, val);
-    
-    val -= MPU_TEMPERATURE_OFFSET; // offset
-    temp = 36.53f + (val - MPU_TEMPERATURE_OFFSET) / ((float)MPU_TEMPERATURE_SCALE);
-
-    return (int16_t)(temp*1000);
-}
-
-void mpu_get_accel(int16_t *x, int16_t *y, int16_t *z)
+void mpu_read(mpu_data_t* data)
 {
     uint8_t addr = MPU_ACCEL_XOUT_ADDR;
-    int16_t buff[3];
+    int16_t buff[7];
     int16_t val;
+    int i;
     
+    // mpu registers: 6 accel regs, 2 temperature regs, 6 gyro regs
     gmd_io_tx_t tx[2] = {
         { .isw = 1, .buf = &addr, .len = 1, .off = 0 },
-        { .isw = 0, .buf = (uint8_t*)buff, .len = 6, .off = 0 }
+        { .isw = 0, .buf = (uint8_t*)buff,  .len = sizeof(buff), .off = 0 }
     };
     
     gmd_i2c_sg(MPU_ADDR, tx, 2, 0);
     
-    val = buff[0];
-    val = ntohs(val);
-    *x = (int16_t)roundf(1000 * (val / 16384.0f));
     
-    val = buff[1];
-    val = ntohs(val);
-    *y = (int16_t)roundf(1000 * (val / 16384.0f));
+    memset(data, 0, sizeof *data);
     
-    val = buff[2];
-    val = ntohs(val);
-    *z = (int16_t)roundf(1000 * (val / 16384.0f));
+    for (i=0; i < 3; ++i) {
+        val = (int16_t)ntohs(buff[0 + i]);
+        data->accel[i] = val / 16384.0f;
+    }
+    
+    val = (int16_t)ntohs(buff[3]);
+    data->temperature = 36.53f + (val - MPU_TEMPERATURE_OFFSET) / ((float)MPU_TEMPERATURE_SCALE);
+    for (i=0; i < 3; ++i) {
+        val = (int16_t)ntohs(buff[4 + i]);
+        data->gyro[i] = val / 131.0f;
+    }
+
 }
 
-
-void mpu_get_gyro(int16_t *x, int16_t *y, int16_t *z)
-{
-    uint8_t addr = MPU_GYRO_XOUT_ADDR;
-    int16_t buff[3];
-    int16_t val;
-    
-    gmd_io_tx_t tx[2] = {
-        { .isw = 1, .buf = &addr, .len = 1, .off = 0 },
-        { .isw = 0, .buf = (uint8_t*)buff, .len = 6, .off = 0 }
-    };
-    
-    gmd_i2c_sg(MPU_ADDR, tx, 2, 0);
-    
-    val = buff[0];
-    val = ntohs(val);
-    *x = (int16_t)(1000 * (val / 131.0));
-    
-    val = buff[1];
-    val = ntohs(val);
-    *y = (int16_t)(1000 * (val / 131.0));
-    
-    val = buff[2];
-    val = ntohs(val);
-    *z = (int16_t)(1000 * (val / 131.0));
-}
 
 void mpu_init()
 {

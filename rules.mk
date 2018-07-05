@@ -71,6 +71,24 @@ LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 
+# barometer test debug flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-barometer-tst
+
+LOCAL_STATIC_LIBS := \
+	ganymede-dbg \
+	barometer-dbg \
+
+LOCAL_TASKS       := barometer-tst
+
+LOCAL_TARGET      := atmega328p
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega168
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
 
 
 # mpu test debug flavor

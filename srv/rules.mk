@@ -4,7 +4,7 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := srv-dbg
-LOCAL_DEFINES += SRV_DELIMITER=\"abc\"
+LOCAL_DEFINES += SRV_DELIMITER=\"abcd\"
 LOCAL_DEFINES += LOG_LEVEL=3
 
 LOCAL_SRC += $(LOCAL_PATH)/src/common/srv.c

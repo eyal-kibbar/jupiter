@@ -14,6 +14,7 @@ LOCAL_INC += $(LOCAL_PATH)/inc
 
 LOCAL_STATIC_LIBS := \
 	ganymede-dbg \
+	servo-dbg \
 	mpu-dbg \
 	srv-dbg
 

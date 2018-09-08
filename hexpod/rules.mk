@@ -1,12 +1,15 @@
 LOCAL_PATH := $(call my-dir)
 
+
+HEXPOD_DEFINES := HEXPOD_MAX_INSTRUCTIONS=8
+
 # ========================================
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := hexpod-dbg
 
 LOCAL_DEFINES := \
-	HEXPOD_MAX_INSTRUCTIONS=30 \
+	$(HEXPOD_DEFINES) \
 	HEXPOD_SERVO_DELAY_MS=2000 \
 	STACK_SIZE=256 \
 	LOG_LEVEL=3
@@ -37,7 +40,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := hexpod-srv-dbg
 
 LOCAL_DEFINES := \
-	HEXPOD_MAX_INSTRUCTIONS=30 \
+	$(HEXPOD_DEFINES) \
 	STACK_SIZE=256 \
 	LOG_LEVEL=3
 

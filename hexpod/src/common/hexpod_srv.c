@@ -5,7 +5,7 @@
 
 #include <avr/interrupt.h>
 
-hexpod_state_t s[5];
+
 
 
 void setup()
@@ -16,10 +16,11 @@ void setup()
 void loop()
 {
     int x;
-    x = srv_recv(s, sizeof s);
+	hexpod_state_t script[HEXPOD_MAX_INSTRUCTIONS];
+    x = srv_recv(script, sizeof script);
     LOG_INFO(HEXPOD_SRV, "recved %d bytes");
     if (x > 0) {
-        hexpod_load(s, x / sizeof(hexpod_state_t));
+        hexpod_load(script, x / sizeof(hexpod_state_t));
     }
 }
 

@@ -35,6 +35,7 @@ LOCAL_MODULE      := jupiter-dbg
 
 LOCAL_STATIC_LIBS := \
 	ganymede-dbg \
+	servo-dbg \
 	mpu-dbg \
 	srv-dbg \
 
@@ -144,8 +145,8 @@ LOCAL_STATIC_LIBS := \
 	ganymede-dbg \
 
 LOCAL_TASKS       := \
-	hexpod-srv-dbg \
 	hexpod-dbg \
+	hexpod-srv-dbg
 
 
 LOCAL_TARGET      := atmega328p

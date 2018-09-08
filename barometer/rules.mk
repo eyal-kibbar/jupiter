@@ -3,12 +3,19 @@ LOCAL_PATH := $(call my-dir)
 # ========================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := srv-dbg
-LOCAL_DEFINES += SRV_DELIMITER=\"abcd\"
-LOCAL_DEFINES += LOG_LEVEL=3
+LOCAL_MODULE := barometer-dbg
 
-LOCAL_SRC += $(LOCAL_PATH)/src/common/srv.c
-LOCAL_INC += $(LOCAL_PATH)/inc
+LOCAL_DEFINES := \
+	LOG_LEVEL=3
+
+LOCAL_EXPORT := $(LOCAL_PATH)/api
+
+LOCAL_SRC := \
+	$(LOCAL_PATH)/src/common/hwio.c \
+	$(LOCAL_PATH)/src/common/bmp180.c
+
+LOCAL_INC := \
+	$(LOCAL_PATH)/inc
 
 LOCAL_EXPORT := $(LOCAL_PATH)/api
 
@@ -26,14 +33,18 @@ include $(BUILD_STATIC_LIB)
 # ========================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := srv-tst
-LOCAL_DEFINES += STACK_SIZE=256
-LOCAL_DEFINES += LOG_LEVEL=3
+LOCAL_MODULE := barometer-tst
+
+LOCAL_DEFINES := \
+	STACK_SIZE=256 \
+	LOG_LEVEL=3
+
 LOCAL_STATIC_LIBS := \
-	srv-dbg \
+	barometer-dbg \
 	ganymede-dbg
 
-LOCAL_SRC += $(LOCAL_PATH)/tst/srv_test.c
+LOCAL_SRC := $(LOCAL_PATH)/tst/barometer_test.c
+
 LOCAL_TARGET := atmega168
 include $(BUILD_GMD_TASK)
 

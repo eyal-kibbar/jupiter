@@ -128,3 +128,40 @@ include $(BUILD_STATIC_LIB)
 
 
 
+
+# test
+# ========================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := gmd-tst1
+LOCAL_DEFINES += STACK_SIZE=256
+LOCAL_DEFINES += LOG_LEVEL=3
+LOCAL_STATIC_LIBS := \
+	ganymede-dbg
+
+LOCAL_SRC += $(LOCAL_PATH)/tst/test_tsk1.c
+LOCAL_TARGET := atmega168
+include $(BUILD_GMD_TASK)
+
+LOCAL_TARGET := atmega328p
+include $(BUILD_GMD_TASK)
+
+# test
+# ========================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := gmd-tst2
+LOCAL_DEFINES += STACK_SIZE=256
+LOCAL_DEFINES += LOG_LEVEL=3
+LOCAL_STATIC_LIBS := \
+	ganymede-dbg
+
+LOCAL_SRC += $(LOCAL_PATH)/tst/test_tsk2.c
+LOCAL_TARGET := atmega168
+include $(BUILD_GMD_TASK)
+
+LOCAL_TARGET := atmega328p
+include $(BUILD_GMD_TASK)
+
+
+

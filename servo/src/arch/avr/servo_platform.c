@@ -6,11 +6,11 @@
 
 void servo_platform_init()
 {
-    TCCR0B = _BV(CS00);  // set clock with 1024 prescalar
+    TCCR0B = _BV(CS00);  // set clock with no prescalar
     TIMSK0 = _BV(TOIE0); // enable overflow interrupt
 }
 
-void servo_attach(uint8_t pin)
+void servo_platform_attach(uint8_t pin)
 {
     if (pin < 8) {
         DDRD |= _BV(pin);

@@ -17,32 +17,43 @@ void setup()
 
 }
 
-int16_t calc_angle(int16_t x, int16_t z)
+int16_t calc_angle(float x,float z)
 {
-    float xf = (float)x;
-    float zf = (float)z;
     float res;
     
-    res = atan2(xf, zf) * (180 / M_PI);
+    res = atan2(x, z) * (180 / M_PI);
     
     return (int16_t)roundf(res);
 }
 
+mpu_data_t data;
+
 void loop()
 {
     int16_t x, y, z;
+    int16_t gx, gy, gz;
     uint8_t val;
-    
+
     if (0 == (val = mpu_get_status())) {
         gmd_delay(100);
         return;
     }
     
-    
-    mpu_get_accel(&x, &y, &z);
-    LOG_INFO(TEST, "(%6d %6d %6d) %3d %3d", x, y, z,
-             calc_angle(x, z),
-             calc_angle(y, z));
+    mpu_read(&data);
+    x = (int16_t)roundf(data.accel[0] * 1000);
+    y = (int16_t)roundf(data.accel[1] * 1000);
+    z = (int16_t)roundf(data.accel[2] * 1000);
+
+    gx = (int16_t)roundf(data.gyro[0] * 1000);
+    gy = (int16_t)roundf(data.gyro[1] * 1000);
+    gz = (int16_t)roundf(data.gyro[2] * 1000);
+
+    //mpu_get_accel(&x, &y, &z);
+    LOG_INFO(TEST, "(%6d %6d %6d) %3d %3d (%6d %6d %6d) %6d", x, y, z,
+             calc_angle(x / 1000.0f, z / 1000.0f),
+             calc_angle(y / 1000.0f, z / 1000.0f),
+            gx, gy, gz,
+            (int16_t)roundf(1000 * data.temperature));
 }
 
 

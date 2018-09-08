@@ -80,5 +80,16 @@ clean:
 dummy:
 	@echo 
 
+init/%:
+	$(eval PRJ := $(@F))
+	$(eval PRJ_UPPER := $(shell echo $(PRJ) | tr a-z A-Z))
+	@cp -rv  $(ROOT_PATH)/template $(ROOT_PATH)/$(PRJ)
+	@mv $(ROOT_PATH)/$(PRJ)/tst/template_test.c   $(ROOT_PATH)/$(PRJ)/tst/$(PRJ)_test.c
+	@mv $(ROOT_PATH)/$(PRJ)/api/template.h        $(ROOT_PATH)/$(PRJ)/api/$(PRJ).h
+	@mv $(ROOT_PATH)/$(PRJ)/src/common/template.c $(ROOT_PATH)/$(PRJ)/src/common/$(PRJ).c
+	find $(ROOT_PATH)/$(PRJ) -type f  | xargs -l1 sed -i "s/template/$(PRJ)/"
+	find $(ROOT_PATH)/$(PRJ) -type f  | xargs -l1 sed -i "s/TEMPLATE/$(PRJ_UPPER)/"
+
+
 
 # DO NOT DELETE

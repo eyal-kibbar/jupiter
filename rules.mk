@@ -1,6 +1,33 @@
 
 LOCAL_PATH := $(call my-dir)
 
+# ganymede test
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := gmd-tst
+
+LOCAL_STATIC_LIBS := \
+	ganymede-dbg \
+
+LOCAL_TASKS       := \
+	gmd-tst1 \
+	gmd-tst2 \
+
+
+LOCAL_TARGET      := atmega168
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega328p
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+
+
+
+
+
+
+
 # test debug flavor
 # ========================================
 include $(CLEAR_VARS)
@@ -8,6 +35,7 @@ LOCAL_MODULE      := jupiter-dbg
 
 LOCAL_STATIC_LIBS := \
 	ganymede-dbg \
+	servo-dbg \
 	mpu-dbg \
 	srv-dbg \
 
@@ -44,6 +72,24 @@ LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 
+# barometer test debug flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-barometer-tst
+
+LOCAL_STATIC_LIBS := \
+	ganymede-dbg \
+	barometer-dbg \
+
+LOCAL_TASKS       := barometer-tst
+
+LOCAL_TARGET      := atmega328p
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega168
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
 
 
 # mpu test debug flavor
@@ -88,5 +134,26 @@ LOCAL_TARGET      := atmega168
 LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
+# hexpod debug flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-hexpod-dbg
 
+LOCAL_STATIC_LIBS := \
+	servo-dbg \
+	srv-dbg \
+	ganymede-dbg \
+
+LOCAL_TASKS       := \
+	hexpod-dbg \
+	hexpod-srv-dbg
+
+
+LOCAL_TARGET      := atmega328p
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega168
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
 

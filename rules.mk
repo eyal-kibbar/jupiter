@@ -24,10 +24,6 @@ include $(BUILD_EXEC)
 
 
 
-
-
-
-
 # test debug flavor
 # ========================================
 include $(CLEAR_VARS)
@@ -147,6 +143,29 @@ LOCAL_STATIC_LIBS := \
 LOCAL_TASKS       := \
 	hexpod-dbg \
 	hexpod-srv-dbg
+
+
+LOCAL_TARGET      := atmega328p
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega168
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+
+# hexpod release flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-hexpod
+
+LOCAL_STATIC_LIBS := \
+	servo \
+	srv \
+	ganymede \
+
+LOCAL_TASKS       := \
+	hexpod \
+	hexpod-srv
 
 
 LOCAL_TARGET      := atmega328p

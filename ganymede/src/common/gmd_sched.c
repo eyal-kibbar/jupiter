@@ -23,10 +23,11 @@ struct task_s {
     task_t* next;
     enum task_state_e state;
     uint8_t ctx[GMD_SCHED_CONTEXT_SIZE];
-    
+
     uint8_t waiting;
-    
+
     volatile uint8_t* p_event;
+    uint8_t event_mask;
     uint8_t sleep_tick;
 };
 
@@ -63,15 +64,15 @@ void gmd_sched_init()
     task_t* task;
     extern char __tasks_end[];
     extern char __tasks_start[];
-    
+
     gmd_sched.first = (task_t*)__tasks_start;
 
     for (task = gmd_sched.first; task; task = (task_t*)task->next) {
-        
+
         if (GMD_MAGIC != task->data.magic) {
             gmd_panic();
         }
-        
+
         gmd_platform_context_create((sched_context_t)task->ctx,
                 task_start,
                 (void*)((uint8_t*)task + sizeof(task_t)),
@@ -97,7 +98,7 @@ void gmd_sched_loop()
     task_t* task;
     uint8_t maysleep;
     uint8_t curtick;
-    
+
     // run all idle tasks
     for (task = gmd_sched.first; task; task = task->next) {
 
@@ -107,25 +108,25 @@ void gmd_sched_loop()
         }
 
     }
-    
+
     // wakeup all sleeping tasks
     maysleep = 1;
     curtick = gmd_curtick();
-    
+
     // clear interrupt before checking for events.
     // otherwise we may end up sleeping without the event interrupt to wake us up
     platform_cli();
-    
+
     for (task = gmd_sched.first; task; task = task->next) {
-        
+
         if (TASK_STATE_WAITING == task->state) {
-            
+
             if ( (task->waiting & WAITING_TICK  && curtick != task->sleep_tick) ||
-                 (task->waiting & WAITING_EVENT && 0 != *task->p_event) ) {
-                     
+                 (task->waiting & WAITING_EVENT && 0 != (*task->p_event & task->event_mask)) ) {
+
                  task->state = TASK_STATE_IDLE;
              }
-            
+
         }
 
         // stop sleeping if an idle task is encountered
@@ -140,31 +141,37 @@ void gmd_sched_loop()
     }
 }
 
-uint16_t gmd_wfe(volatile uint8_t* p_event, uint16_t timeout_ms)
+uint16_t gmd_wfe(volatile uint8_t* p_event, uint8_t mask, uint16_t timeout_ms)
 {
     uint8_t before_tick, tick, nticks;
     uint16_t us, carry_us = 0, sleeping_ms = 0;
-    
+
+    // check if event has already happened
+    if (0 != (*p_event & mask)) {
+        return 0;
+    }
+
     gmd_sched.curr->waiting = WAITING_EVENT;
     gmd_sched.curr->p_event = p_event;
-    
+    gmd_sched.curr->event_mask = mask;
+
     if (0 == timeout_ms) {
         gmd_sched.curr->state = TASK_STATE_WAITING;
         sched_task_switch(&gmd_sched.scheduler);
         return 0;
     }
-    
+
     tick = gmd_curtick();
     gmd_sched.curr->waiting |= WAITING_TICK;
-    
+
     do {
         before_tick = tick;
-        
+
         // sleep for at least 1 tick
         gmd_sched.curr->state = TASK_STATE_WAITING;
         gmd_sched.curr->sleep_tick = tick;
         sched_task_switch(&gmd_sched.scheduler);
-        
+
         tick = gmd_curtick();
         nticks = tick - before_tick;
         sleeping_ms += gmd_ticks2ms(nticks, &us);
@@ -173,9 +180,9 @@ uint16_t gmd_wfe(volatile uint8_t* p_event, uint16_t timeout_ms)
             ++sleeping_ms;
             carry_us -= 1000;
         }
-        
-    } while (sleeping_ms < timeout_ms && 0 == *p_event);
-    
+
+    } while (sleeping_ms < timeout_ms && 0 == (*p_event & mask));
+
     return sleeping_ms;
 }
 
@@ -187,10 +194,6 @@ void gmd_delay(uint16_t ms)
         sched_task_switch(&gmd_sched.scheduler);
         return;
     }
-    
-    gmd_wfe(&no_evt, ms);
+
+    gmd_wfe(&no_evt, 0, ms);
 }
-
-
-
-

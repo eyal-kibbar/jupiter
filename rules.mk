@@ -176,3 +176,23 @@ LOCAL_TARGET      := atmega168
 LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
+
+# moisture test flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-moisture-tst
+
+LOCAL_STATIC_LIBS := \
+	ganymede-dbg \
+
+LOCAL_TASKS       := \
+	moisture-tst \
+
+
+LOCAL_TARGET      := atmega328p
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega168
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)

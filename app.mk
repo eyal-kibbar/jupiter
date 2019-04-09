@@ -13,7 +13,7 @@ include $(ROOT_PATH)/srv/rules.mk
 
 # sensors
 include $(ROOT_PATH)/sensors/barometer/rules.mk
-include $(ROOT_PATH)/mpu/rules.mk
+include $(ROOT_PATH)/sensors/mpu/rules.mk
 include $(ROOT_PATH)/sensors/moisture/rules.mk
 
 # apps

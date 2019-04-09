@@ -11,7 +11,7 @@ include $(ROOT_PATH)/drivers/servo/rules.mk
 
 # libs
 include $(ROOT_PATH)/libs/clk/rules.mk
-include $(ROOT_PATH)/srv/rules.mk
+include $(ROOT_PATH)/libs/srv/rules.mk
 
 # sensors
 include $(ROOT_PATH)/sensors/barometer/rules.mk

@@ -11,8 +11,8 @@ include $(ROOT_PATH)/clk/rules.mk
 include $(ROOT_PATH)/servo/rules.mk
 include $(ROOT_PATH)/srv/rules.mk
 
-# drivers
-include $(ROOT_PATH)/barometer/rules.mk
+# sensors
+include $(ROOT_PATH)/sensors/barometer/rules.mk
 include $(ROOT_PATH)/mpu/rules.mk
 include $(ROOT_PATH)/sensors/moisture/rules.mk
 

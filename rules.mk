@@ -196,3 +196,27 @@ include $(BUILD_EXEC)
 LOCAL_TARGET      := atmega168
 LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
+
+
+# invpend debug flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-invpend-dbg
+
+LOCAL_STATIC_LIBS := \
+	servo-dbg \
+	mpu-dbg \
+	ganymede-dbg \
+
+LOCAL_TASKS       := \
+	invpend-dbg \
+
+
+LOCAL_TARGET      := atmega328p
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega168
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+

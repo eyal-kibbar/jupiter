@@ -2,8 +2,8 @@
 
 CFLAGS += -Werror
 
-# kernel
-include $(ROOT_PATH)/ganymede/rules.mk
+# core
+include $(ROOT_PATH)/core/ganymede/rules.mk
 include $(ROOT_PATH)/template/rules.mk
 
 # drivers

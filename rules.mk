@@ -15,11 +15,11 @@ LOCAL_TASKS       := \
 
 
 LOCAL_TARGET      := atmega168
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 LOCAL_TARGET      := atmega328p
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 
@@ -38,11 +38,11 @@ LOCAL_STATIC_LIBS := \
 LOCAL_TASKS       := test
 
 LOCAL_TARGET      := atmega168
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 LOCAL_TARGET      := atmega328p
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 
@@ -60,11 +60,11 @@ LOCAL_STATIC_LIBS := \
 LOCAL_TASKS       := srv-tst
 
 LOCAL_TARGET      := atmega328p
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 LOCAL_TARGET      := atmega168
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 
@@ -80,11 +80,11 @@ LOCAL_STATIC_LIBS := \
 LOCAL_TASKS       := barometer-tst
 
 LOCAL_TARGET      := atmega328p
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 LOCAL_TARGET      := atmega168
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 
@@ -101,11 +101,11 @@ LOCAL_TASKS       := mpu-tst
 
 
 LOCAL_TARGET      := atmega328p
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 LOCAL_TARGET      := atmega168
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 
@@ -123,11 +123,11 @@ LOCAL_TASKS       := servo-tst
 
 
 LOCAL_TARGET      := atmega328p
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 LOCAL_TARGET      := atmega168
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 # hexpod debug flavor
@@ -146,11 +146,11 @@ LOCAL_TASKS       := \
 
 
 LOCAL_TARGET      := atmega328p
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 LOCAL_TARGET      := atmega168
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 # hexpod release flavor
@@ -169,11 +169,11 @@ LOCAL_TASKS       := \
 
 
 LOCAL_TARGET      := atmega328p
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 LOCAL_TARGET      := atmega168
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 
@@ -190,11 +190,11 @@ LOCAL_TASKS       := \
 
 
 LOCAL_TARGET      := atmega328p
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 LOCAL_TARGET      := atmega168
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 
@@ -213,10 +213,9 @@ LOCAL_TASKS       := \
 
 
 LOCAL_TARGET      := atmega328p
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
 
 LOCAL_TARGET      := atmega168
-LOCAL_LDFLAGS     := -T $(ROOT_PATH)/ganymede/$(LOCAL_TARGET).ld
+LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
 include $(BUILD_EXEC)
-

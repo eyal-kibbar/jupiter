@@ -21,5 +21,5 @@ include $(ROOT_PATH)/sensors/moisture/rules.mk
 # apps
 include $(ROOT_PATH)/apps/hexpod/rules.mk
 include $(ROOT_PATH)/apps/invpend/rules.mk
-include $(ROOT_PATH)/test/rules.mk
+include $(ROOT_PATH)/apps/test/rules.mk
 include $(ROOT_PATH)/rules.mk

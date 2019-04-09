@@ -14,7 +14,7 @@ include $(ROOT_PATH)/srv/rules.mk
 # drivers
 include $(ROOT_PATH)/barometer/rules.mk
 include $(ROOT_PATH)/mpu/rules.mk
-include $(ROOT_PATH)/moisture/rules.mk
+include $(ROOT_PATH)/sensors/moisture/rules.mk
 
 # apps
 

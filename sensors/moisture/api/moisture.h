@@ -3,4 +3,7 @@
 
 
 
+void moisture_init();
+
+
 #endif /* MOISTURE_H_ */

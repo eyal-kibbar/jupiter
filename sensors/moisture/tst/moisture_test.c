@@ -12,7 +12,7 @@ void setup()
     DDRC = 0b00000000;
     ADMUX = 0b01100001;
     //ADCSRA = 0b10000111;
-    ADCSRA = 0b10000110;
+    ADCSRA = 0b10000111;
 
 }
 
@@ -24,11 +24,12 @@ void loop()
     ADCSRA = ADCSRA | (1 << ADSC);
 
     // Wait until the ADSC bit has been cleared
-    while(ADCSRA & (1 << ADSC));
+    //while(ADCSRA & (1 << ADSC));
+    gmd_wfe((volatile uint8_t*)0x7A, 1 << ADSC, 0);
 
     LOG_INFO(moisture, "%d", ADCH);
 
-    gmd_delay(100);
+    gmd_delay(10000);
 }
 
 

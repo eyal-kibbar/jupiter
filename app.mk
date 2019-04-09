@@ -10,7 +10,7 @@ include $(ROOT_PATH)/template/rules.mk
 include $(ROOT_PATH)/drivers/servo/rules.mk
 
 # libs
-include $(ROOT_PATH)/clk/rules.mk
+include $(ROOT_PATH)/libs/clk/rules.mk
 include $(ROOT_PATH)/srv/rules.mk
 
 # sensors

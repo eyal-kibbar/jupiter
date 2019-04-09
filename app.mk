@@ -6,9 +6,11 @@ CFLAGS += -Werror
 include $(ROOT_PATH)/ganymede/rules.mk
 include $(ROOT_PATH)/template/rules.mk
 
-# libraries
+# drivers
+include $(ROOT_PATH)/drivers/servo/rules.mk
+
+# libs
 include $(ROOT_PATH)/clk/rules.mk
-include $(ROOT_PATH)/servo/rules.mk
 include $(ROOT_PATH)/srv/rules.mk
 
 # sensors

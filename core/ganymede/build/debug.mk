@@ -67,6 +67,47 @@ LOCAL_DEFINES += $(I2C_DEFINES)
 include $(BUILD_STATIC_LIB)
 
 
+
+# linux
+# ========================================
+include $(CLEAR_VARS)
+
+LOCAL_TARGET := linux
+LOCAL_MODULE := ganymede-dbg
+
+ARCH := $(ARCH_$(LOCAL_TARGET))
+
+# add common
+LOCAL_SRC     := $(COMMON_SRC) $(SRC_$(ARCH))
+LOCAL_INC     := $(COMMON_INC) $(INC_$(ARCH))
+LOCAL_EXPORT  := $(COMMON_API) $(LOCAL_PATH)/api/arch/$(ARCH)
+LOCAL_DEFINES := \
+	$(COMMON_DEFINES) \
+	DEBUG \
+	LOG_LEVEL=1
+
+LOCAL_CFLAGS := -Og
+
+include $(BUILD_STATIC_LIB)
+
+# linux test
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := gmd-tst
+
+LOCAL_STATIC_LIBS := \
+	ganymede-dbg \
+
+LOCAL_TASKS       := \
+	gmd-tst \
+
+
+LOCAL_TARGET      := linux
+#LOCAL_LDFLAGS     := -T $(ROOT_PATH)/core/ganymede/$(LOCAL_TARGET).ld
+include $(BUILD_EXEC)
+
+
+
 # test
 # ========================================
 include $(CLEAR_VARS)
@@ -101,3 +142,22 @@ include $(BUILD_GMD_TASK)
 LOCAL_TARGET := atmega328p
 include $(BUILD_GMD_TASK)
 
+# test
+# ========================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := gmd-tst
+LOCAL_DEFINES += STACK_SIZE=256
+LOCAL_DEFINES += LOG_LEVEL=3
+LOCAL_STATIC_LIBS := \
+	ganymede-dbg
+
+LOCAL_SRC += $(LOCAL_PATH)/tst/test_tsk.c
+LOCAL_TARGET := atmega168
+include $(BUILD_GMD_TASK)
+
+LOCAL_TARGET := atmega328p
+include $(BUILD_GMD_TASK)
+
+LOCAL_TARGET := linux
+include $(BUILD_GMD_TASK)

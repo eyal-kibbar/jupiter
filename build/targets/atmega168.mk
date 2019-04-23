@@ -1,0 +1,13 @@
+
+
+# atmega168
+TARGET := atmega168
+ARCH_$(TARGET) := avr
+
+CFLAGS_$(TARGET)  := $(CFLAGS_$(ARCH_$(TARGET)))
+CFLAGS_$(TARGET)  += -DF_CPU=16000000UL -mmcu=$(TARGET)
+CC_$(TARGET)      := $(CC_$(ARCH_$(TARGET)))
+AR_$(TARGET)      := $(AR_$(ARCH_$(TARGET)))
+OBJCOPY_$(TARGET) := $(OBJCOPY_$(ARCH_$(TARGET)))
+
+SUPPORTED_TARGETS += $(TARGET)

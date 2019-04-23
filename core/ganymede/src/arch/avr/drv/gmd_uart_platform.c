@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <avr/io.h>
 
+#ifndef DRV_UART_BAUDRATE
+#error "DRV_UART_BAUDRATE must be set"
+#endif
 
 #define _BAUDRATE ((uint16_t)((F_CPU / (DRV_UART_BAUDRATE * 16UL)) - 1))
 

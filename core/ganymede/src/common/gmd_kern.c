@@ -6,8 +6,8 @@
 
 #include <stdio.h>
 
-
-
+__attribute__((weak)) void gmd_uart_init() {}
+__attribute__((weak)) void gmd_i2c_init() {}
 
 
 void gmd_panic()

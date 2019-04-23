@@ -19,40 +19,23 @@ TASKS       :=
 SUPPORTED_TARGETS :=
 V_PREFIX    := $(if $(findstring 1, $(V)), , @)
 
-# tools
-CC_avr := $(V_PREFIX)avr-gcc
-AR_avr := $(V_PREFIX)avr-ar
+# avr
+######
+CC_avr      := $(V_PREFIX)avr-gcc
+AR_avr      := $(V_PREFIX)avr-ar
 OBJCOPY_avr := $(V_PREFIX)avr-objcopy
-
-# arch CFLAGS
-CFLAGS_avr :=
+CFLAGS_avr  :=
 
 
-# atmega168
-TARGET := atmega168
-ARCH_$(TARGET) := avr
-
-CFLAGS_$(TARGET)  := $(CFLAGS_$(ARCH_$(TARGET)))
-CFLAGS_$(TARGET)  += -DF_CPU=16000000UL -mmcu=$(TARGET)
-CC_$(TARGET)      := $(CC_$(ARCH_$(TARGET)))
-AR_$(TARGET)      := $(AR_$(ARCH_$(TARGET)))
-OBJCOPY_$(TARGET) := $(OBJCOPY_$(ARCH_$(TARGET)))
-
-SUPPORTED_TARGETS += $(TARGET)
+# linux
+#######
+CC_linux      := $(V_PREFIX)gcc
+AR_linux      := $(V_PREFIX)ar
+OBJCOPY_linux := $(V_PREFIX)objcopy
+CFLAGS_linux  := -g
 
 
-# atmega328p
-TARGET := atmega328p
-ARCH_$(TARGET) := avr
-
-CFLAGS_$(TARGET)  := $(CFLAGS_$(ARCH_$(TARGET)))
-CFLAGS_$(TARGET)  += -DF_CPU=16000000UL -mmcu=$(TARGET)
-CC_$(TARGET)      := $(CC_$(ARCH_$(TARGET)))
-AR_$(TARGET)      := $(AR_$(ARCH_$(TARGET)))
-OBJCOPY_$(TARGET) := $(OBJCOPY_$(ARCH_$(TARGET)))
-
-SUPPORTED_TARGETS += $(TARGET)
-
+include $(wildcard $(BUILD_DIR)/targets/*.mk)
 
 # rules.mk script paths
 CLEAR_VARS       := $(BUILD_DIR)/jupiter_clear_vars.mk
@@ -72,13 +55,13 @@ $(info ========================================)
 $(info )
 
 _all: $(LIBS) $(TASKS) $(EXECUTABLES)
-	
+
 
 clean:
 	rm -rf $(DIR_OUT)
 
 dummy:
-	@echo 
+	@echo
 
 init/%:
 	$(eval PRJ := $(@F))

@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <ucontext.h>
 
+#include <time.h>
+
 struct sched_context_s {
     ucontext_t uctx;
 };
@@ -16,6 +18,7 @@ struct sched_context_s {
  * ========================================
  **/
 
+
 void gmd_platform_context_create(
     sched_context_t ctx,
     void (*func)(),
@@ -25,7 +28,6 @@ void gmd_platform_context_create(
     getcontext(&ctx->uctx);
     ctx->uctx.uc_stack.ss_sp = stack;
     ctx->uctx.uc_stack.ss_size = stack_size;
-    ctx->uctx.uc_stack.ss_flags = 0;
     ctx->uctx.uc_link = 0;
     makecontext(&ctx->uctx, func, 0);
 }
@@ -44,7 +46,10 @@ void gmd_platform_context_swap(
 
 void gmd_platform_sleep()
 {
-
+    struct timespec t;
+    t.tv_sec = 0;
+    t.tv_nsec = 1000 * 1000;
+    nanosleep(&t, NULL);
 }
 
 /**
@@ -54,18 +59,23 @@ void gmd_platform_sleep()
 
 uint8_t gmd_curtick()
 {
-    return 0;
+    /* set tick to ~1ms */
+    struct timespec t;
+    clock_gettime(CLOCK_MONOTONIC, &t);
+
+    return (uint8_t)((t.tv_nsec >> 20) & 0xFF);
 }
 
 uint16_t gmd_ticks2ms(uint8_t ticks, uint16_t* out_us)
 {
-    *out_us = 0;
+    *out_us = ticks * 1048; // tick is ~1ms
     return 0;
 }
 
 uint16_t gmd_ms2ticks(uint16_t ms, uint16_t* out_us)
 {
-    return 0;
+    *out_us = 0;
+    return ms;
 }
 
 

@@ -2,7 +2,7 @@
 #include "moisture.h"
 #include "logging.h"
 
-
+#include "clk.h"
 #include <avr/io.h>
 #include <util/delay.h>
 
@@ -18,6 +18,7 @@ void setup()
 
 void loop()
 {
+    clk_time_t uptime;
     //LOG_INFO(moisture, "testing");
 
     // Start an ADC conversion by setting ADSC bit (bit 6)
@@ -27,9 +28,16 @@ void loop()
     //while(ADCSRA & (1 << ADSC));
     gmd_wfe((volatile uint8_t*)0x7A, 1 << ADSC, 0);
 
-    LOG_INFO(moisture, "%d", ADCH);
+    clk_uptime(&uptime);
+    LOG_INFO(moisture, "%d-%02d:%02d:%02d.%04d# %d",
+        uptime.day,
+        uptime.hour,
+        uptime.minute,
+        uptime.second,
+        uptime.millisecond,
+        ADCH);
 
-    gmd_delay(10000);
+    gmd_delay(100);
 }
 
 

@@ -5,6 +5,9 @@
 #include <stddef.h>
 #include "gmd_platform.h"
 
+
+typedef struct sched_context_s* sched_context_t;
+
 void gmd_sched_init();
 void gmd_sched_loop();
 
@@ -22,4 +25,3 @@ void gmd_platform_sleep();
 
 
 #endif /* GMD_SCHED_H_ */
-

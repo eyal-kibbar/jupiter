@@ -14,7 +14,4 @@
 #define unlikely(x)     __builtin_expect((x),0)
 
 
-typedef struct sched_context_s* sched_context_t;
-
 #endif /* GMD_PLATFORM_H_ */
-

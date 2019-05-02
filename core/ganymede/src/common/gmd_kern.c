@@ -6,8 +6,8 @@
 
 #include <stdio.h>
 
-
-
+__attribute__((weak)) void gmd_uart_init() {}
+__attribute__((weak)) void gmd_i2c_init() {}
 
 
 void gmd_panic()
@@ -24,17 +24,12 @@ int main()
     gmd_i2c_init();
     gmd_log_init();
     gmd_sched_init();
-    
- 
+
+
     platform_sei();
-   
-    
+
+
     while (1) gmd_sched_loop();
-    
+
     return 0;
 }
-
-
-
-
-

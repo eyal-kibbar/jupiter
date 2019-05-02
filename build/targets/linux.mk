@@ -1,0 +1,12 @@
+
+
+# atmega168
+TARGET := linux
+ARCH_$(TARGET) := linux
+
+CFLAGS_$(TARGET)  := $(CFLAGS_$(ARCH_$(TARGET)))
+CC_$(TARGET)      := $(CC_$(ARCH_$(TARGET)))
+AR_$(TARGET)      := $(AR_$(ARCH_$(TARGET)))
+OBJCOPY_$(TARGET) := $(OBJCOPY_$(ARCH_$(TARGET)))
+
+SUPPORTED_TARGETS += $(TARGET)

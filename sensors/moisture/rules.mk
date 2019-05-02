@@ -19,7 +19,8 @@ LOCAL_INC := \
 LOCAL_EXPORT := $(LOCAL_PATH)/api
 
 LOCAL_STATIC_LIBS := \
-	ganymede-dbg
+	ganymede-dbg \
+	clk-dbg
 
 LOCAL_TARGET := atmega168
 include $(BUILD_STATIC_LIB)
@@ -39,6 +40,7 @@ LOCAL_DEFINES := \
 	LOG_LEVEL=3
 
 LOCAL_STATIC_LIBS := \
+	clk-dbg \
 	moisture-dbg \
 	ganymede-dbg
 
@@ -49,5 +51,3 @@ include $(BUILD_GMD_TASK)
 
 LOCAL_TARGET := atmega328p
 include $(BUILD_GMD_TASK)
-
-

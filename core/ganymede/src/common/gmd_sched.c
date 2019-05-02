@@ -62,10 +62,10 @@ static void task_start(void)
 void gmd_sched_init()
 {
     task_t* task;
-    extern char __tasks_end[];
-    extern char __tasks_start[];
+    extern char __start_tasks[];
+    extern char __stop_tasks[];
 
-    gmd_sched.first = (task_t*)__tasks_start;
+    gmd_sched.first = (task_t*)__start_tasks;
 
     for (task = gmd_sched.first; task; task = (task_t*)task->next) {
 
@@ -85,7 +85,7 @@ void gmd_sched_init()
 
         task->state = TASK_STATE_IDLE;
 
-        if (task->next == (task_t*)__tasks_end) {
+        if (task->next == (task_t*)__stop_tasks) {
             task->next = NULL;
         }
     }

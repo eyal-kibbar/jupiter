@@ -23,7 +23,7 @@ struct gmd_task_data_s {
 };
 
 #define TASK(_stack_size) \
-    __attribute__((used, section(".tasks"))) \
+    __attribute__((used, section("tasks"))) \
     union { uint8_t stack[_stack_size]; struct gmd_task_data_s task_data; } task = { \
         .task_data = { \
             .magic = GMD_MAGIC, \

@@ -46,3 +46,21 @@ include $(BUILD_GMD_TASK)
 
 LOCAL_TARGET := atmega328p
 include $(BUILD_GMD_TASK)
+
+
+# srv test debug flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-srv-tst
+
+LOCAL_STATIC_LIBS := \
+	srv-dbg \
+	ganymede-dbg \
+
+LOCAL_TASKS       := srv-tst
+
+LOCAL_TARGET      := atmega328p
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega168
+include $(BUILD_EXEC)

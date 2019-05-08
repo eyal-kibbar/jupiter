@@ -52,3 +52,20 @@ LOCAL_TARGET := atmega328p
 include $(BUILD_GMD_TASK)
 
 
+
+# barometer test debug flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-barometer-tst
+
+LOCAL_STATIC_LIBS := \
+	barometer-dbg \
+	ganymede-dbg \
+
+LOCAL_TASKS       := barometer-tst
+
+LOCAL_TARGET      := atmega328p
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega168
+include $(BUILD_EXEC)

@@ -3,7 +3,7 @@ LOCAL_PATH := $(call my-dir)
 # ========================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := moisture-dbg
+LOCAL_MODULE := swuart-dbg
 
 LOCAL_DEFINES := \
 	LOG_LEVEL=3
@@ -11,7 +11,7 @@ LOCAL_DEFINES := \
 LOCAL_EXPORT := $(LOCAL_PATH)/api
 
 LOCAL_SRC := \
-	$(LOCAL_PATH)/src/common/moisture.c
+	$(LOCAL_PATH)/src/common/swuart.c
 
 LOCAL_INC := \
 	$(LOCAL_PATH)/inc
@@ -19,8 +19,7 @@ LOCAL_INC := \
 LOCAL_EXPORT := $(LOCAL_PATH)/api
 
 LOCAL_STATIC_LIBS := \
-	ganymede-dbg \
-	clk-dbg
+	ganymede-dbg
 
 LOCAL_TARGET := atmega168
 include $(BUILD_STATIC_LIB)
@@ -33,18 +32,17 @@ include $(BUILD_STATIC_LIB)
 # ========================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := moisture-tst
+LOCAL_MODULE := swuart-tst
 
 LOCAL_DEFINES := \
 	STACK_SIZE=256 \
 	LOG_LEVEL=3
 
 LOCAL_STATIC_LIBS := \
-	clk-dbg \
-	moisture-dbg \
+	swuart-dbg \
 	ganymede-dbg
 
-LOCAL_SRC := $(LOCAL_PATH)/tst/moisture_test.c
+LOCAL_SRC := $(LOCAL_PATH)/tst/swuart_test.c
 
 LOCAL_TARGET := atmega168
 include $(BUILD_GMD_TASK)
@@ -52,19 +50,18 @@ include $(BUILD_GMD_TASK)
 LOCAL_TARGET := atmega328p
 include $(BUILD_GMD_TASK)
 
-# moisture test flavor
+
 # ========================================
 include $(CLEAR_VARS)
-LOCAL_MODULE      := jupiter-moisture-tst
+
+LOCAL_MODULE := jupiter-swuart-tst
 
 LOCAL_STATIC_LIBS := \
-	clk-dbg \
-	ganymede-dbg \
+	swuart-dbg \
+	ganymede-dbg
 
-LOCAL_TASKS       := \
-	moisture-tst \
-	clk_ticker-dbg \
-
+LOCAL_TASKS := \
+	swuart-tst
 
 LOCAL_TARGET      := atmega328p
 include $(BUILD_EXEC)

@@ -61,9 +61,23 @@ LOCAL_TARGET := atmega328p
 include $(BUILD_GMD_TASK)
 
 
+# hexpod debug flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-hexpod-dbg
+
+LOCAL_STATIC_LIBS := \
+	servo-dbg \
+	srv-dbg \
+	ganymede-dbg \
+
+LOCAL_TASKS       := \
+	hexpod-dbg \
+	hexpod-srv-dbg
 
 
+LOCAL_TARGET      := atmega328p
+include $(BUILD_EXEC)
 
-
-
-
+LOCAL_TARGET      := atmega168
+include $(BUILD_EXEC)

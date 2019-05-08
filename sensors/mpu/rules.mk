@@ -38,3 +38,22 @@ include $(BUILD_GMD_TASK)
 
 LOCAL_TARGET := atmega328p
 include $(BUILD_GMD_TASK)
+
+
+# mpu test debug flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-mpu-tst
+
+LOCAL_STATIC_LIBS := \
+	mpu-dbg \
+	ganymede-dbg \
+
+LOCAL_TASKS       := mpu-tst
+
+
+LOCAL_TARGET      := atmega328p
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega168
+include $(BUILD_EXEC)

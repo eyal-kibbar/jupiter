@@ -169,3 +169,23 @@ LOCAL_DEFINES := \
 	$(COMMON_LOCAL_DEFINES) \
 	STACK_SIZE=65528
 include $(BUILD_GMD_TASK)
+
+
+# ganymede test
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := gmd-tst
+
+LOCAL_STATIC_LIBS := \
+	ganymede-dbg \
+
+LOCAL_TASKS       := \
+	gmd-tst1 \
+	gmd-tst2 \
+
+
+LOCAL_TARGET      := atmega168
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega328p
+include $(BUILD_EXEC)

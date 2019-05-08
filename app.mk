@@ -8,6 +8,7 @@ include $(ROOT_PATH)/template/rules.mk
 
 # drivers
 include $(ROOT_PATH)/drivers/servo/rules.mk
+include $(ROOT_PATH)/drivers/swuart/rules.mk
 
 # libs
 include $(ROOT_PATH)/libs/clk/rules.mk

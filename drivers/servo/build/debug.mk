@@ -55,3 +55,20 @@ LOCAL_TARGET := atmega328p
 include $(BUILD_GMD_TASK)
 
 
+# servo test debug flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-servo-tst
+
+LOCAL_STATIC_LIBS := \
+	servo-dbg \
+	ganymede-dbg \
+
+LOCAL_TASKS       := servo-tst
+
+
+LOCAL_TARGET      := atmega328p
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega168
+include $(BUILD_EXEC)

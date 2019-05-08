@@ -7,4 +7,3 @@ COMMON_DEFINES := \
 
 include $(LOCAL_PATH)/build/debug.mk
 include $(LOCAL_PATH)/build/release.mk
-

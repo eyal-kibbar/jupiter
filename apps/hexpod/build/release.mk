@@ -61,7 +61,23 @@ include $(BUILD_GMD_TASK)
 
 
 
+# hexpod release flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-hexpod
+
+LOCAL_STATIC_LIBS := \
+	servo \
+	srv \
+	ganymede \
+
+LOCAL_TASKS       := \
+	hexpod \
+	hexpod-srv
 
 
+LOCAL_TARGET      := atmega328p
+include $(BUILD_EXEC)
 
-
+LOCAL_TARGET      := atmega168
+include $(BUILD_EXEC)

@@ -51,3 +51,23 @@ include $(BUILD_GMD_TASK)
 
 LOCAL_TARGET := atmega328p
 include $(BUILD_GMD_TASK)
+
+# moisture test flavor
+# ========================================
+include $(CLEAR_VARS)
+LOCAL_MODULE      := jupiter-moisture-tst
+
+LOCAL_STATIC_LIBS := \
+	clk-dbg \
+	ganymede-dbg \
+
+LOCAL_TASKS       := \
+	moisture-tst \
+	clk_ticker-dbg \
+
+
+LOCAL_TARGET      := atmega328p
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega168
+include $(BUILD_EXEC)

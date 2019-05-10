@@ -1,5 +1,6 @@
 
 
+# atmega328p
 TARGET := atmega328p
 ARCH_$(TARGET) := avr
 
@@ -9,5 +10,6 @@ CC_$(TARGET)      := $(CC_$(ARCH_$(TARGET)))
 AR_$(TARGET)      := $(AR_$(ARCH_$(TARGET)))
 LDFLAGS_$(TARGET) := -T $(BUILD_DIR)/linker/avr5.ld
 OBJCOPY_$(TARGET) := $(OBJCOPY_$(ARCH_$(TARGET)))
+AVRDUDE_PORT      ?= /dev/ttyUSB0
 
 SUPPORTED_TARGETS += $(TARGET)

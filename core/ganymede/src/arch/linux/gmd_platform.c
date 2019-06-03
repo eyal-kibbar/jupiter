@@ -93,3 +93,8 @@ void gmd_platform_init()
     // TODO: create a timer thread
     // TODO: create an interrupt thread
 }
+
+
+void gmd_i2c_init() {
+
+}

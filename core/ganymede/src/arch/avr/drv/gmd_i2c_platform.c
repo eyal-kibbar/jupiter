@@ -43,8 +43,9 @@ void gmd_i2c_platform_init()
     #error "Invalid value of DRV_I2C_BITRATE"
 #endif
 
-    TWBR = DRV_I2C_BITRATE;
-
+    //TWBR = DRV_I2C_BITRATE;
+    TWBR = 72;
+    LOG_INFO(I2C_MASTER, "init i2c");
     i2c_available = 1;
 }
 
@@ -191,7 +192,7 @@ void gmd_i2c_sg(gmd_i2c_dev_addr_t slave_addr, gmd_io_tx_t* tx, uint8_t n, uint1
 
     platform_cli();
 
-    LOG_INFO(I2C, "waiting for bus");
+    LOG_INFO(I2C, "waiting for bus: %d", i2c_available);
     while (!i2c_available) {
         sleep_ms = gmd_wfe(&i2c_available, 0xFF, timeout_ms);
 
@@ -206,6 +207,7 @@ void gmd_i2c_sg(gmd_i2c_dev_addr_t slave_addr, gmd_io_tx_t* tx, uint8_t n, uint1
     }
     i2c_available = 0;
     i2c_is_done = 0;
+    platform_sei();
 
     gmd_i2c.slave_addr = slave_addr;
     gmd_i2c.tx = tx;
@@ -219,7 +221,4 @@ void gmd_i2c_sg(gmd_i2c_dev_addr_t slave_addr, gmd_io_tx_t* tx, uint8_t n, uint1
     LOG_INFO(I2C, "waiting for transaction to finish");
     gmd_wfe(&i2c_is_done, 0xFF, timeout_ms);
     i2c_available = 1;
-
-    platform_sei();
-
 }

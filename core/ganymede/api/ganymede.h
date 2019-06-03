@@ -47,6 +47,8 @@ uint16_t gmd_ms2ticks(uint16_t ms, uint16_t* out_us);
 void gmd_uart_sg(gmd_io_tx_t* tx, uint8_t n, uint16_t timeout_ms);
 void gmd_i2c_sg(gmd_i2c_dev_addr_t slave_addr, gmd_io_tx_t* tx, uint8_t n, uint16_t timeout_ms);
 
+void gmd_i2c_slave_init(gmd_i2c_dev_addr_t slave_addr, uint8_t (*on_read)(void), void (*on_write)(uint8_t));
+
 void gmd_panic();
 
 #endif /* GANYMEDE_H_ */

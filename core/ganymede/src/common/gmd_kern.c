@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 __attribute__((weak)) void gmd_uart_init() {}
-__attribute__((weak)) void gmd_i2c_init() {}
+//__attribute__((weak)) void gmd_i2c_init() {}
 
 
 void gmd_panic()
@@ -21,8 +21,8 @@ int main()
 {
     gmd_platform_init();
     gmd_uart_init();
-    gmd_i2c_init();
     gmd_log_init();
+    gmd_i2c_init();
     gmd_sched_init();
 
 

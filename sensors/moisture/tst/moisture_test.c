@@ -26,7 +26,7 @@ void loop()
 
     // Wait until the ADSC bit has been cleared
     //while(ADCSRA & (1 << ADSC));
-    gmd_wfe((volatile uint8_t*)0x7A, 1 << ADSC, 0);
+    gmd_wfe((volatile uint8_t*)0x7A, 1 << ADSC, 0, 0);
 
     clk_uptime(&uptime);
     LOG_INFO(moisture, "%d-%02d:%02d:%02d.%04d# %d",

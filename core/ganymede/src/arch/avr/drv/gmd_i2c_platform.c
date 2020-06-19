@@ -194,7 +194,7 @@ void gmd_i2c_sg(gmd_i2c_dev_addr_t slave_addr, gmd_io_tx_t* tx, uint8_t n, uint1
 
     LOG_INFO(I2C, "waiting for bus: %d", i2c_available);
     while (!i2c_available) {
-        sleep_ms = gmd_wfe(&i2c_available, 0xFF, timeout_ms);
+        sleep_ms = gmd_wfe(&i2c_available, 0xFF, 0, timeout_ms);
 
         // check for timeout
         if (0 != timeout_ms) {
@@ -219,6 +219,6 @@ void gmd_i2c_sg(gmd_i2c_dev_addr_t slave_addr, gmd_io_tx_t* tx, uint8_t n, uint1
 
     // wait until operation is done
     LOG_INFO(I2C, "waiting for transaction to finish");
-    gmd_wfe(&i2c_is_done, 0xFF, timeout_ms);
+    gmd_wfe(&i2c_is_done, 0xFF, 0, timeout_ms);
     i2c_available = 1;
 }

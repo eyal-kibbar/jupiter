@@ -113,7 +113,7 @@ static uint16_t gmd_uart_wait(gmd_uart_sg_t* uart, uint16_t timeout_ms)
     uint16_t sleep_ms = 0;
 
     while (!(uart->available)) {
-        sleep_ms = gmd_wfe(&uart->available, 0xFF, timeout_ms);
+        sleep_ms = gmd_wfe(&uart->available, 0xFF, 0, timeout_ms);
 
         // check for timeout
         if (0 != timeout_ms) {
@@ -171,7 +171,7 @@ void gmd_uart_sg(gmd_io_tx_t* tx, uint8_t n, uint16_t timeout_ms)
         }
 
         // wait until operation is done
-        remaining_timeout_ms = gmd_wfe(&uart->is_done, 0xFF, timeout_ms);
+        remaining_timeout_ms = gmd_wfe(&uart->is_done, 0xFF, 0, timeout_ms);
         uart->available = 1;
         if (tx->isw) {
             uart_irq_disable_tx();

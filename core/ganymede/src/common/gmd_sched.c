@@ -9,6 +9,8 @@
 #define WAITING_TICK  0x01
 #define WAITING_EVENT 0x02
 
+#define GMD_IS_EVENT_CHANGED(p_event, mask, event) (((*p_event) & (mask)) != ((event) & (mask)))
+
 enum task_state_e {
     TASK_STATE_IDLE,
     TASK_STATE_RUNNING,
@@ -28,6 +30,7 @@ struct task_s {
 
     volatile uint8_t* p_event;
     uint8_t event_mask;
+    uint8_t event;
     uint8_t sleep_tick;
 };
 
@@ -122,7 +125,7 @@ void gmd_sched_loop()
         if (TASK_STATE_WAITING == task->state) {
 
             if ( (task->waiting & WAITING_TICK  && curtick != task->sleep_tick) ||
-                 (task->waiting & WAITING_EVENT && 0 != (*task->p_event & task->event_mask)) ) {
+                 (task->waiting & WAITING_EVENT && GMD_IS_EVENT_CHANGED(task->p_event, task->event_mask, task->event)) ) {
 
                  task->state = TASK_STATE_IDLE;
              }
@@ -141,18 +144,19 @@ void gmd_sched_loop()
     }
 }
 
-uint16_t gmd_wfe(volatile uint8_t* p_event, uint8_t mask, uint16_t timeout_ms)
+uint16_t gmd_wfe(volatile uint8_t* p_event, uint8_t mask, uint8_t event, uint16_t timeout_ms)
 {
     uint8_t before_tick, tick, nticks;
     uint16_t us, carry_us = 0, sleeping_ms = 0;
 
     // check if event has already happened
-    if (0 != (*p_event & mask)) {
+    if ((event & mask) != (*p_event & mask)) {
         return 0;
     }
 
-    gmd_sched.curr->waiting = WAITING_EVENT;
-    gmd_sched.curr->p_event = p_event;
+    gmd_sched.curr->waiting    = WAITING_EVENT;
+    gmd_sched.curr->p_event    = p_event;
+    gmd_sched.curr->event      = event;
     gmd_sched.curr->event_mask = mask;
 
     if (0 == timeout_ms) {
@@ -181,7 +185,8 @@ uint16_t gmd_wfe(volatile uint8_t* p_event, uint8_t mask, uint16_t timeout_ms)
             carry_us -= 1000;
         }
 
-    } while (sleeping_ms < timeout_ms && 0 == (*p_event & mask));
+    } while (sleeping_ms < timeout_ms && !GMD_IS_EVENT_CHANGED(p_event, mask, event));
+
 
     return sleeping_ms;
 }
@@ -195,5 +200,5 @@ void gmd_delay(uint16_t ms)
         return;
     }
 
-    gmd_wfe(&no_evt, 0, ms);
+    gmd_wfe(&no_evt, 0, 0, ms);
 }

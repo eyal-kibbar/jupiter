@@ -36,9 +36,10 @@ struct gmd_task_data_s {
 void gmd_delay(uint16_t ms);
 
 /**
+ * wait until event changes
  * @return if timeout != 0, number of ms waited for event
  */
-uint16_t gmd_wfe(volatile uint8_t* p_event, uint8_t mask, uint16_t timeout_ms);
+uint16_t gmd_wfe(volatile uint8_t* p_event, uint8_t mask, uint8_t event, uint16_t timeout_ms);
 
 uint8_t  gmd_curtick();
 uint16_t gmd_ticks2ms(uint8_t ticks, uint16_t* out_us);

@@ -34,7 +34,7 @@ static void servo_set_pins(uint16_t status, uint16_t mask)
 }
 
 
-ISR(TIMER0_OVF_vect)
+ISR(TIMER0_COMPA_vect)
 {
     servo_tick();
 }

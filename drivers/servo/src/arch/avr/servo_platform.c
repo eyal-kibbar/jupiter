@@ -1,13 +1,16 @@
 
 #include "servo_platform_api.h"
+#include "servo.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
 
 void servo_platform_init()
 {
-    TCCR0B = _BV(CS00);  // set clock with no prescalar
-    TIMSK0 = _BV(TOIE0); // enable overflow interrupt
+    // initialize 50Hz:
+    TCCR0B = _BV(CS01);   // set clock with 8 prescalar
+    OCR0A  = SERVO_50HZ_COMPARE-1; // set compare A value
+    TIMSK0 = _BV(OCIE0A); // enable compare match A interrupt
 }
 
 void servo_platform_attach(uint8_t pin)
@@ -19,6 +22,3 @@ void servo_platform_attach(uint8_t pin)
         DDRB |= _BV(pin - 8);
     }
 }
-
-
-

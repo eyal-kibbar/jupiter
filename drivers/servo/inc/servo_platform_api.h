@@ -5,7 +5,8 @@
 
 void servo_platform_init();
 void servo_platform_attach(uint8_t pin);
-void servo_tick();
+
+static void servo_tick();
 
 
 #endif /* SERVO_PLATFORM_API_H_ */

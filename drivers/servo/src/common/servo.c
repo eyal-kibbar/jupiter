@@ -17,7 +17,7 @@ typedef struct servo_s {
     servo_pin_t pin[SERVO_MAX_PIN];
     uint8_t num_attached;
     uint8_t curr;
-    
+
     uint8_t tick;
     uint16_t attached;
     uint16_t mask;
@@ -31,6 +31,7 @@ COMPILER_CHECK(SERVO_MAX_PIN <= (8*sizeof(servo.mask))); // need to add more bit
 
 void servo_init(void)
 {
+    servo.tick = SERVO_50HZ_RESOLUTION;
     servo_platform_init();
 }
 
@@ -38,9 +39,9 @@ void servo_attach(uint8_t pin)
 {
     uint8_t n = servo.num_attached;
     servo_platform_attach(pin);
-    
+
     servo.pin[n].pin_idx = pin;
-    servo.pin[n].duty = 0xFF;
+    servo.pin[n].duty = SERVO_50HZ_RESOLUTION;
     servo.attached |= (1 << pin);
     ++servo.num_attached;
 }
@@ -49,52 +50,51 @@ static int servo_cmp(const void* a, const void* b)
 {
     const servo_pin_t* pa = (const servo_pin_t*)a;
     const servo_pin_t* pb = (const servo_pin_t*)b;
-    
-    if (pa->duty < pb->duty) return -1;
-    if (pa->duty > pb->duty) return +1;
-    return 0;
+
+    return (int)pa->duty - (int)pb->duty;
 }
-                      
+
+void servo_set_mircoseconds(uint8_t pin, uint16_t microseconds)
+{
+    servo_set(pin, microseconds / SERVO_50HZ_TICK_US);
+}
+
 void servo_set(uint8_t pin, uint8_t duty)
 {
     uint8_t i;
-    
+
     LOG_INFO(SERVO, "setting pin %u duty %u", pin, duty);
-    
-    duty = 0xFF - duty;
-    
-    
+
+    duty = SERVO_50HZ_RESOLUTION - duty;
+
+
     for (i=0; i < servo.num_attached; ++i ) {
         if (servo.pin[i].pin_idx != pin) {
             continue;
         }
-        
+
         servo_platform_cli();
         servo.pin[i].duty = duty;
         qsort(servo.pin, servo.num_attached, sizeof(servo_pin_t), servo_cmp);
         servo_platform_sei();
         return;
     }
-    
-    
-    
-    //servo.tick = 0;
-    
 }
 
-void servo_tick()
+static void servo_tick()
 {
     uint8_t need_change = 0;
     const servo_pin_t* c;
-    
-    if (servo.tick == 0) {
+
+    if (servo.tick == SERVO_50HZ_RESOLUTION) {
         servo.curr = 0;
         servo.mask = 0;
+        servo.tick = 0;
         need_change = 1;
     }
-    
+
     ++servo.tick;
-    
+
     for (c = &servo.pin[servo.curr];
          servo.curr < servo.num_attached && c->duty < servo.tick;
          c = &servo.pin[++servo.curr]) {
@@ -108,22 +108,3 @@ void servo_tick()
         servo_set_pins(servo.mask, servo.attached);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

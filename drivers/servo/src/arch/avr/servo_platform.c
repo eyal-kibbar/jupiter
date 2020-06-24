@@ -8,9 +8,10 @@
 void servo_platform_init()
 {
     // initialize 50Hz:
-    TCCR0B = _BV(CS01);   // set clock with 8 prescalar
     OCR0A  = SERVO_50HZ_COMPARE-1; // set compare A value
+    TCCR0A =  _BV(WGM01); // set CTC mode
     TIMSK0 = _BV(OCIE0A); // enable compare match A interrupt
+    TCCR0B = _BV(CS01);   // set clock with 8 prescalar
 }
 
 void servo_platform_attach(uint8_t pin)

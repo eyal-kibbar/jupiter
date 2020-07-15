@@ -4,6 +4,7 @@ CFLAGS += -Werror
 
 # core
 include $(ROOT_PATH)/core/ganymede/rules.mk
+include $(ROOT_PATH)/core/io/rules.mk
 include $(ROOT_PATH)/template/rules.mk
 
 # drivers

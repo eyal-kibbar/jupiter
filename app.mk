@@ -19,6 +19,7 @@ include $(ROOT_PATH)/libs/srv/rules.mk
 include $(ROOT_PATH)/sensors/barometer/rules.mk
 include $(ROOT_PATH)/sensors/mpu/rules.mk
 include $(ROOT_PATH)/sensors/moisture/rules.mk
+include $(ROOT_PATH)/sensors/nRF24L01/rules.mk
 
 # apps
 include $(ROOT_PATH)/apps/hexpod/rules.mk

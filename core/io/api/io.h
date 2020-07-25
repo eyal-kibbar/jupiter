@@ -2,6 +2,7 @@
 #define IO_H_
 
 #include "ganymede.h"
+#include "io_platform.h"
 
 
 #define IO_TX_MODE_W      0x1

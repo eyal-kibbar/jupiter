@@ -1,7 +1,6 @@
 #ifndef IO_H_
 #define IO_H_
 
-#include "ganymede.h"
 #include "io_platform.h"
 
 
@@ -18,6 +17,8 @@ typedef struct io_tx_s {
     uint8_t* buf;
     uint8_t data[IO_TX_MAX_INLINE];
 } io_tx_t;
+
+void io_logging_init();
 
 void io_spi_master_init();
 void io_spi_slave_init();

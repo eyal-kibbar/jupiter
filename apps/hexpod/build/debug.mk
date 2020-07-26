@@ -21,7 +21,8 @@ LOCAL_EXPORT := $(LOCAL_PATH)/api
 
 LOCAL_STATIC_LIBS := \
 	servo \
-	ganymede
+	ganymede \
+	logging
 
 LOCAL_CFLAGS := -O0
 
@@ -50,7 +51,8 @@ LOCAL_EXPORT := $(LOCAL_PATH)/api
 
 LOCAL_STATIC_LIBS := \
 	srv \
-	ganymede
+	ganymede \
+	logging
 
 LOCAL_CFLAGS := -O0
 
@@ -70,6 +72,7 @@ LOCAL_STATIC_LIBS := \
 	servo-dbg \
 	srv-dbg \
 	ganymede-dbg \
+	logging
 
 LOCAL_TASKS       := \
 	hexpod-dbg \

@@ -21,7 +21,8 @@ LOCAL_EXPORT := $(LOCAL_PATH)/api
 
 LOCAL_STATIC_LIBS := \
 	mpu-dbg \
-	ganymede-dbg
+	ganymede-dbg \
+	logging
 
 LOCAL_TARGET := atmega168
 include $(BUILD_GMD_TASK)
@@ -41,6 +42,7 @@ LOCAL_STATIC_LIBS := \
 	servo-dbg \
 	mpu-dbg \
 	ganymede-dbg \
+	logging
 
 LOCAL_TASKS       := \
 	invpend-dbg \

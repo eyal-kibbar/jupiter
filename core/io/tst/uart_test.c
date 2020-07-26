@@ -1,11 +1,13 @@
 #include "ganymede.h"
 #include "io.h"
 #include "utils.h"
+#include "logging.h"
 
 
 void setup()
 {
     io_uart_init(9600);
+    io_logging_init();
 }
 
 void loop()
@@ -27,8 +29,8 @@ void loop()
     };
 
     io_uart_sg(&tx[0], 2, 0);
-    //io_uart_sg(&tx[1], 1, 0);
-    //gmd_delay(1000);
+
+    LOG_INFO(UART, "testing 123");
 }
 
 

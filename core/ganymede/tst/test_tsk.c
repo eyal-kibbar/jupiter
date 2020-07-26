@@ -1,5 +1,5 @@
 #include "ganymede.h"
-#include "logging.h"
+#include <stdio.h>
 
 void setup()
 {
@@ -8,7 +8,7 @@ void setup()
 
 void loop()
 {
-    LOG_INFO(test, "testing 123");
+    //LOG_INFO(test, "testing 123");
     gmd_delay(1000);
 }
 

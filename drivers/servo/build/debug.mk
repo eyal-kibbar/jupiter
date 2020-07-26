@@ -14,7 +14,9 @@ LOCAL_DEFINES     := \
 	LOG_LEVEL=3  \
 
 
-LOCAL_STATIC_LIBS := ganymede-dbg
+LOCAL_STATIC_LIBS := \
+	ganymede-dbg \
+	logging
 
 LOCAL_CFLAGS := -Og
 
@@ -46,7 +48,8 @@ LOCAL_DEFINES     := \
 LOCAL_SRC         := $(LOCAL_PATH)/tst/servo_test.c
 LOCAL_STATIC_LIBS := \
 	servo-dbg \
-	ganymede-dbg
+	ganymede-dbg \
+	logging
 
 LOCAL_TARGET := atmega168
 include $(BUILD_GMD_TASK)
@@ -63,6 +66,7 @@ LOCAL_MODULE      := jupiter-servo-tst
 LOCAL_STATIC_LIBS := \
 	servo-dbg \
 	ganymede-dbg \
+	logging
 
 LOCAL_TASKS       := servo-tst
 

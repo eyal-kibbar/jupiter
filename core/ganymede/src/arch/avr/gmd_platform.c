@@ -3,7 +3,7 @@
 #include "gmd_sched.h"
 #include "gmd_kern.h"
 
-#include <stdio.h>
+
 #include <setjmp.h>
 
 #include <avr/sleep.h>
@@ -126,31 +126,6 @@ uint16_t gmd_ms2ticks(uint16_t ms, uint16_t* out_us)
 ISR(TIMER2_OVF_vect)
 {
     ++gmd_timer_tick;
-}
-
-
-/**
- * log
- * ========================================
- **/
-
-static int gmd_log_uart_putchar(char c, FILE *stream)
-{
-    //gmd_io_tx_t tx = { .isw = 1, .buf = (uint8_t*)&c, .len = 1, .off = 0 };
-
-    //gmd_uart_sg(&tx, 1, 0);
-    return 1;
-}
-
-
-static FILE gmd_log_stream = FDEV_SETUP_STREAM(
-    gmd_log_uart_putchar,
-    NULL,
-    _FDEV_SETUP_WRITE);
-
-void gmd_log_init()
-{
-    stdout = &gmd_log_stream;
 }
 
 

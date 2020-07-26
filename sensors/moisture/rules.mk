@@ -20,7 +20,8 @@ LOCAL_EXPORT := $(LOCAL_PATH)/api
 
 LOCAL_STATIC_LIBS := \
 	ganymede-dbg \
-	clk-dbg
+	clk-dbg \
+	logging
 
 LOCAL_TARGET := atmega168
 include $(BUILD_STATIC_LIB)
@@ -42,7 +43,8 @@ LOCAL_DEFINES := \
 LOCAL_STATIC_LIBS := \
 	clk-dbg \
 	moisture-dbg \
-	ganymede-dbg
+	ganymede-dbg \
+	logging
 
 LOCAL_SRC := $(LOCAL_PATH)/tst/moisture_test.c
 
@@ -60,6 +62,7 @@ LOCAL_MODULE      := jupiter-moisture-tst
 LOCAL_STATIC_LIBS := \
 	clk-dbg \
 	ganymede-dbg \
+	logging
 
 LOCAL_TASKS       := \
 	moisture-tst \

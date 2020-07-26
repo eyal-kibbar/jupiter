@@ -15,7 +15,6 @@ void gmd_panic()
 int main()
 {
     gmd_platform_init();
-    gmd_log_init();
     gmd_i2c_init();
     gmd_sched_init();
 

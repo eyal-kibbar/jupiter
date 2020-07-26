@@ -1,6 +1,4 @@
 #include "ganymede.h"
-#include "logging.h"
-
 
 static int i;
 static char buff[50];

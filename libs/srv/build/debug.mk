@@ -16,7 +16,8 @@ LOCAL_INC += $(LOCAL_PATH)/inc
 LOCAL_EXPORT := $(LOCAL_PATH)/api
 
 LOCAL_STATIC_LIBS := \
-	ganymede-dbg
+	ganymede-dbg \
+	logging
 
 LOCAL_TARGET := atmega168
 include $(BUILD_STATIC_LIB)
@@ -38,7 +39,8 @@ LOCAL_DEFINES := \
 
 LOCAL_STATIC_LIBS := \
 	srv-dbg \
-	ganymede-dbg
+	ganymede-dbg \
+	logging
 
 LOCAL_SRC += $(LOCAL_PATH)/tst/srv_test.c
 LOCAL_TARGET := atmega168
@@ -56,6 +58,7 @@ LOCAL_MODULE      := jupiter-srv-tst
 LOCAL_STATIC_LIBS := \
 	srv-dbg \
 	ganymede-dbg \
+	logging
 
 LOCAL_TASKS       := srv-tst
 

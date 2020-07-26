@@ -1,5 +1,4 @@
 #include "ganymede.h"
-#include "logging.h"
 #include "gmd_i2c.h"
 #include "gmd_platform.h"
 #include "gmd_i2c_platform.h"
@@ -15,6 +14,9 @@ static volatile uint8_t i2c_available;
 static volatile uint8_t i2c_is_done;
 static gmd_i2c_sg_t gmd_i2c;
 
+// TODO: remove once i2c is in io
+#define LOG_INFO(...)
+#define LOG_ERROR(...)
 
 void gmd_i2c_platform_init()
 {

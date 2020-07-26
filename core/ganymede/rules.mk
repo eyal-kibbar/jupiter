@@ -18,17 +18,6 @@ COMMON_API := $(LOCAL_PATH)/api
 
 COMMON_DEFINES := GANYMEDE
 
-# uart
-# ----------------------------------------
-UART_SRC := $(LOCAL_PATH)/src/common/drv/gmd_uart.c
-UART_INC := $(LOCAL_PATH)/inc
-
-UART_SRC_avr := $(LOCAL_PATH)/src/arch/avr/drv/gmd_uart_platform.c
-UART_INC_avr := $(LOCAL_PATH)/inc/arch/avr/drv
-
-UART_DEFINES := DRV_UART_BAUDRATE=9600
-
-
 # i2c master
 # ----------------------------------------
 I2C_SRC := $(LOCAL_PATH)/src/common/drv/gmd_i2c.c

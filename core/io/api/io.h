@@ -21,12 +21,13 @@ typedef struct io_tx_s {
 
 void io_spi_master_init();
 void io_spi_slave_init();
-
-
 void io_spi_tx_begin(uint8_t slave_select_pin);
 void io_spi_tx_end();
 void io_spi_master_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms);
 void io_spi_slave_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms);
 
+
+void io_uart_init(uint16_t baud_rate);
+void io_uart_sg(io_tx_t* tx, uint8_t n, uint16_t timeout_ms);
 
 #endif /* IO_H_ */

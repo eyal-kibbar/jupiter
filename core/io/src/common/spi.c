@@ -151,7 +151,7 @@ void io_spi_slave_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
     if (spi_sg.tx->mode & IO_TX_MODE_W) {
         data = spi_sg.tx->buf[spi_sg.tx->off];
     }
-    
+
     spi_set_data(data);
 
     // wait for select slave to be low

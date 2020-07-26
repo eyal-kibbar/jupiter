@@ -10,6 +10,7 @@ typedef struct uart_sg_s {
 } uart_sg_t;
 
 static volatile uart_sg_t* p_uart = NULL;
+static volatile uint8_t uart_used = 0;
 
 void io_uart_init(uint16_t baud_rate)
 {
@@ -77,6 +78,7 @@ void io_uart_sg(io_tx_t* tx, uint8_t n, uint16_t timeout_ms)
 {
     uart_sg_t sg;
     uint16_t remaining_timeout_ms = timeout_ms;
+    uint16_t sleep_ms;
 
     sg.tx = tx;
     sg.num = n;
@@ -85,7 +87,15 @@ void io_uart_sg(io_tx_t* tx, uint8_t n, uint16_t timeout_ms)
 
     platform_cli();
     // wait for device to be available
-    //gmd_wfe(&p_uart, 0xFF, 0, remaining_timeout_ms);
+    sleep_ms = gmd_wfe(&uart_used, 0xFF, 1, remaining_timeout_ms);
+    if (0 != remaining_timeout_ms) {
+        if (remaining_timeout_ms <= sleep_ms) {
+            goto out;
+        }
+        remaining_timeout_ms -= sleep_ms;
+    }
+
+    uart_used = 1;
     p_uart = &sg;
 
     if (sg.tx->mode & IO_TX_MODE_R) {
@@ -98,5 +108,8 @@ void io_uart_sg(io_tx_t* tx, uint8_t n, uint16_t timeout_ms)
     gmd_wfe(&sg.is_done, 0xFF, 0, remaining_timeout_ms);
     uart_irq_disable();
     p_uart = NULL;
+    uart_used = 0;
+
+out:
     platform_sei();
 }

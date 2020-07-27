@@ -22,7 +22,7 @@ LOCAL_EXPORT := $(LOCAL_PATH)/api
 LOCAL_STATIC_LIBS := \
 	mpu-dbg \
 	ganymede-dbg \
-	i2c-dbg \
+	i2c-mstr-dbg \
 	logging
 
 LOCAL_TARGET := atmega168
@@ -43,7 +43,7 @@ LOCAL_STATIC_LIBS := \
 	servo-dbg \
 	mpu-dbg \
 	ganymede-dbg \
-	i2c-dbg \
+	i2c-mstr-dbg \
 	logging
 
 LOCAL_TASKS       := \

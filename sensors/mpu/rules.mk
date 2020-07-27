@@ -15,7 +15,7 @@ LOCAL_EXPORT += $(LOCAL_PATH)/api
 
 LOCAL_STATIC_LIBS := \
 	ganymede-dbg \
-	i2c-dbg \
+	i2c-mstr-dbg \
 	logging
 
 LOCAL_TARGET := atmega168
@@ -34,7 +34,6 @@ LOCAL_DEFINES += LOG_LEVEL=3
 LOCAL_STATIC_LIBS := \
 	mpu-dbg \
 	ganymede-dbg \
-	i2c-dbg \
 	logging
 
 LOCAL_SRC += $(LOCAL_PATH)/tst/mpu_test.c
@@ -53,7 +52,7 @@ LOCAL_MODULE      := jupiter-mpu-tst
 LOCAL_STATIC_LIBS := \
 	mpu-dbg \
 	ganymede-dbg \
-	i2c-dbg \
+	i2c-mstr-dbg \
 	logging \
 	uart-dbg
 

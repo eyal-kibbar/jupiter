@@ -3,7 +3,7 @@
 # libs:
 # 	spi-dbg
 # 	uart-dbg
-#	i2c-dbg
+#	i2c-mstr-dbg
 #	logging
 #
 # tasks:
@@ -59,7 +59,7 @@ include $(BUILD_STATIC_LIB)
 # ========================================
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := i2c-dbg
+LOCAL_MODULE := i2c-mstr-dbg
 LOCAL_DEFINES := \
 	IO_I2C_PRESCALER=1 \
 	LOG_LEVEL=3

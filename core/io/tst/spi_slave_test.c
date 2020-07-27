@@ -7,17 +7,9 @@
 
 void setup()
 {
+    io_uart_init(9600);
+    io_logging_init();
     io_spi_slave_init();
-}
-uint8_t prev = 0;
-void loop_()
-{
-    uint8_t x;
-    x = PINB & _BV(2);
-    if (x != prev) {
-        LOG_INFO(SPI_SLAV, "%d %2x", x, _BV(DD_SS));
-        prev = x;
-    }
 }
 
 void loop()
@@ -27,7 +19,6 @@ void loop()
     io_tx_t tx[] = {
         {.mode = IO_TX_MODE_R, .len = 3, .off = 0, .buf = str},
         {.mode = IO_TX_MODE_W, .len = 3, .off = 0, .buf = str_s},
-        {.mode = IO_TX_MODE_R | IO_TX_MODE_W | IO_TX_MODE_INLINE, .len = 1, .off = 0, .data = {'S'}},
     };
 
     //c = 'B';
@@ -36,7 +27,6 @@ void loop()
 
     LOG_INFO(SPI_SLAV, "got0: %s", (char*)str); // expecting ABC
     LOG_INFO(SPI_SLAV, "got1: %s", (char*)str_s); // expecting abc
-    LOG_INFO(SPI_SLAV, "got2: %c", (char)tx[2].data[0]); // expecting 'M'
     LOG_INFO(SPI_SLAV, "---------------------");
     //gmd_delay(200);
 }

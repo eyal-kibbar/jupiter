@@ -12,6 +12,8 @@ extern void io_pin_clr(uint8_t);
 
 void setup()
 {
+    io_uart_init(9600);
+    io_logging_init();
     io_spi_master_init();
     DDRD |= _BV(SS_PIN);
     io_pin_set(SS_PIN);
@@ -32,7 +34,6 @@ void loop()
     io_tx_t tx[] = {
         {.mode = IO_TX_MODE_W, .len = 3, .off = 0, .buf = str},
         {.mode = IO_TX_MODE_R | IO_TX_MODE_W, .len = 3, .off = 0, .buf = str_r},
-        {.mode = IO_TX_MODE_R | IO_TX_MODE_W | IO_TX_MODE_INLINE, .len = 1, .off = 0, .data = {'M', 'm'}},
     };
 
     //c = 'A';
@@ -45,7 +46,6 @@ void loop()
 
     LOG_INFO(SPI_MSTR, "got0: %s", (char*)str); // expecting ABC
     LOG_INFO(SPI_MSTR, "got1: %s", (char*)str_r); // expecting abc
-    LOG_INFO(SPI_MSTR, "got2: %c", (char)tx[2].data[0]); // expecting 'S'
     LOG_INFO(SPI_MSTR, "---------------------");
     gmd_delay(1000);
 }

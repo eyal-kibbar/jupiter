@@ -7,6 +7,8 @@
 
 void setup()
 {
+    io_uart_init(9600);
+    io_logging_init();
     io_pin_output(SS_PIN);
     io_pin_set(SS_PIN);
     io_spi_master_init();
@@ -29,12 +31,6 @@ void init()
 void loop()
 {
     static int idx = 0;
-    static int is_initialized=0;
-
-    if (!is_initialized) {
-        is_initialized = 1;
-        init();
-    }
 
     ++idx;
 

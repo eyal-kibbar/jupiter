@@ -134,7 +134,8 @@ LOCAL_DEFINES := \
 
 LOCAL_STATIC_LIBS := \
 	spi-dbg \
-	ganymede-dbg
+	ganymede-dbg \
+	logging
 
 LOCAL_SRC := $(LOCAL_PATH)/tst/spi_master_test.c
 
@@ -155,7 +156,8 @@ LOCAL_DEFINES := \
 
 LOCAL_STATIC_LIBS := \
 	spi-dbg \
-	ganymede-dbg
+	ganymede-dbg \
+	logging
 
 LOCAL_SRC := $(LOCAL_PATH)/tst/spi_slave_test.c
 
@@ -173,6 +175,9 @@ LOCAL_MODULE      := io-tst-spi-mstr
 LOCAL_STATIC_LIBS := \
 	spi-dbg \
 	ganymede-dbg \
+	uart-dbg \
+	logging \
+
 
 LOCAL_TASKS       := \
 	spi-mstr-tst
@@ -193,7 +198,9 @@ LOCAL_MODULE      := io-tst-spi-slav
 LOCAL_STATIC_LIBS := \
 	spi-dbg \
 	ganymede-dbg \
-
+	uart-dbg \
+	logging \
+	
 LOCAL_TASKS       := \
 	spi-slav-tst
 

@@ -5,6 +5,8 @@
 
 void setup()
 {
+    io_uart_init(9600);
+    io_logging_init();
     io_spi_slave_init();
 }
 

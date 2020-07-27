@@ -88,16 +88,6 @@ void io_spi_tx_end()
     platform_sei();
 }
 
-
-static void io_spi_tx_init(io_tx_t *tx, uint8_t n)
-{
-    for (; 0 < n; --n, ++tx) {
-        if (tx->mode & IO_TX_MODE_INLINE) {
-            tx->buf = tx->data;
-        }
-    }
-}
-
 void io_spi_master_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
 {
     uint8_t data = 0;
@@ -106,8 +96,6 @@ void io_spi_master_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
     if (0 == n) {
         return;
     }
-
-    io_spi_tx_init(tx, n);
 
     // initialize transactions struct
     spi_sg.tx = tx;
@@ -136,8 +124,6 @@ void io_spi_slave_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
     if (0 == n) {
         return;
     }
-
-    io_spi_tx_init(tx, n);
 
     platform_cli();
 

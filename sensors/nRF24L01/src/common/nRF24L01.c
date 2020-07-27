@@ -24,45 +24,58 @@ nrf_t nrf;
 
 uint8_t nrf_reg_read(uint8_t addr, uint8_t* val)
 {
+    uint8_t cmd[2];
+
     io_tx_t tx = {
-        .mode = IO_TX_MODE_W | IO_TX_MODE_R | IO_TX_MODE_INLINE,
+        .mode = IO_TX_MODE_W | IO_TX_MODE_R,
         .len = 2,
         .off = 0,
-        .data = {NRF_CMD_R_REGISTER | addr, NRF_CMD_NOP}
+        .buf = cmd
     };
 
+    cmd[0] = NRF_CMD_R_REGISTER | addr;
+    cmd[1] = NRF_CMD_NOP;
+
+
     io_spi_master_sg(&tx, 1, 0);
-    *val = tx.data[1];
-    return tx.data[0];
+    *val = cmd[1];
+    return cmd[0];
 }
 
 uint8_t nrf_reg_write(uint8_t addr, uint8_t val)
 {
+    uint8_t cmd[2];
+
     io_tx_t tx = {
-        .mode = IO_TX_MODE_W | IO_TX_MODE_R | IO_TX_MODE_INLINE,
+        .mode = IO_TX_MODE_W | IO_TX_MODE_R,
         .len = 2,
         .off = 0,
-        .data = {NRF_CMD_W_REGISTER | addr, val}
+        .buf = cmd
     };
+
+    cmd[0] = NRF_CMD_W_REGISTER | addr;
+    cmd[1] = val;
 
     io_spi_master_sg(&tx, 1, 0);
 
-    return tx.data[0]; // status register
+    return cmd[0]; // status register
 }
 
 
 
 void nrf_reg_write_buff(uint8_t addr, uint8_t* buff, uint8_t buff_len)
 {
+    uint8_t cmd = NRF_CMD_W_REGISTER | addr;
+
     io_tx_t tx[] = {
         {
-            .mode = IO_TX_MODE_W | IO_TX_MODE_INLINE,
+            .mode = IO_TX_MODE_W,
             .len = 1,
             .off = 0,
-            .data = {NRF_CMD_W_REGISTER | addr}
+            .buf = &cmd
         },
         {
-            .mode = IO_TX_MODE_W | IO_TX_MODE_INLINE,
+            .mode = IO_TX_MODE_W,
             .len = buff_len,
             .off = 0,
             .buf = buff
@@ -185,12 +198,13 @@ void nrf_send(uint8_t* payload, uint8_t payload_len)
 {
     uint8_t full_payload[NRF_PAYLOAD_LEN];
     uint8_t status, fifo_status;
+    uint8_t cmd = NRF_CMD_W_TX_PAYLOAD;
     io_tx_t tx[] = {
         {
-            .mode = IO_TX_MODE_W | IO_TX_MODE_INLINE,
+            .mode = IO_TX_MODE_W,
             .off = 0,
             .len = 1,
-            .data = {NRF_CMD_W_TX_PAYLOAD}
+            .buf = &cmd
         },
         {
             .mode = IO_TX_MODE_W,
@@ -234,12 +248,13 @@ void nrf_recv(uint8_t* payload, uint8_t* max_payload_len, uint8_t* pipe_idx)
 {
     uint8_t full_payload[NRF_PAYLOAD_LEN];
     uint8_t status;
+    uint8_t cmd = NRF_CMD_W_TX_PAYLOAD;
     io_tx_t tx[] = {
         {
-            .mode = IO_TX_MODE_W | IO_TX_MODE_INLINE,
+            .mode = IO_TX_MODE_W,
             .off = 0,
             .len = 1,
-            .data = {NRF_CMD_W_TX_PAYLOAD}
+            .buf = &cmd
         },
         {
             .mode = IO_TX_MODE_W | IO_TX_MODE_R,

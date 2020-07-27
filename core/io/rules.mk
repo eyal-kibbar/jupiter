@@ -103,8 +103,8 @@ LOCAL_EXPORT := \
 	$(LOCAL_PATH)/api/arch/avr \
 
 LOCAL_SRC := \
-	$(LOCAL_PATH)/src/common/spi.c \
-	$(LOCAL_PATH)/src/arch/avr/spi_platform.c \
+	$(LOCAL_PATH)/src/common/io_spi.c \
+	$(LOCAL_PATH)/src/arch/avr/io_spi_platform.c \
 	$(LOCAL_PATH)/src/arch/avr/io_platform.c
 
 LOCAL_INC := \

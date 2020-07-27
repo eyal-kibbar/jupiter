@@ -1,5 +1,5 @@
-#ifndef SPI_PLATFORM_H_
-#define SPI_PLATFORM_H_
+#ifndef IO_SPI_PLATFORM_H_
+#define IO_SPI_PLATFORM_H_
 
 #include <avr/io.h>
 #include <avr/interrupt.h>

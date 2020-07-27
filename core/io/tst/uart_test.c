@@ -10,6 +10,11 @@ void setup()
     io_logging_init();
 }
 
+void init()
+{
+    LOG_INFO(UART, "initializing");
+}
+
 void loop()
 {
     char* c = "A\n\r";

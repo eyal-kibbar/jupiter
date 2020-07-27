@@ -19,7 +19,7 @@ void setup()
     io_i2c_master_init();
 }
 
-int16_t calc_angle(float x,float z)
+static int16_t calc_angle(float x,float z)
 {
     float res;
 
@@ -30,17 +30,16 @@ int16_t calc_angle(float x,float z)
 
 mpu_data_t data;
 
+void init()
+{
+    mpu_init();
+}
+
 void loop()
 {
     int16_t x, y, z;
     int16_t gx, gy, gz;
     uint8_t val;
-    static uint8_t is_initialized = 0;
-
-    if (0 == is_initialized) {
-        mpu_init();
-        is_initialized = 1;
-    }
 
     if (0 == (val = mpu_get_status())) {
         gmd_delay(100);

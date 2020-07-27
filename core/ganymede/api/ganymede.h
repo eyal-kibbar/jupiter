@@ -16,11 +16,15 @@ typedef struct gmd_io_tx_s {
 } gmd_io_tx_t;
 
 struct gmd_task_data_s {
-    uint16_t magic;
-    uint16_t stack_size;
-    void (*setup_func)();
-    void (*loop_func)();
+    uint16_t magic;         /**<< magic number for identifying a task struct */
+    uint16_t stack_size;    /**<< task stack size */
+    void (*setup_func)();   /**<< setup function for internal chip state. interrupts and async io not available */
+    void (*init_func)();    /**<< init function for external sensors that require io (spi/uart/i2c) initializing */
+    void (*loop_func)();    /**<< loop function that will be called in a loop */
 };
+
+void setup() __attribute__((weak));
+void init() __attribute__((weak));
 
 #define TASK(_stack_size) \
     __attribute__((used, section("tasks"))) \
@@ -29,6 +33,7 @@ struct gmd_task_data_s {
             .magic = GMD_MAGIC, \
             .stack_size = _stack_size, \
             .setup_func = setup, \
+            .init_func = init, \
             .loop_func = loop, \
         } \
     }

@@ -57,6 +57,10 @@ static void task_start(void)
 {
     platform_sei();
 
+    if (NULL != gmd_sched.curr->data.init_func) {
+        gmd_sched.curr->data.init_func();
+    }
+
     while (1) {
         gmd_sched.curr->data.loop_func();
     }
@@ -84,8 +88,10 @@ void gmd_sched_init()
         task->next = (task_t*)((uintptr_t)task + (uintptr_t)task->data.stack_size);
 
 
-        task->data.setup_func();
-
+        if (NULL != task->data.setup_func) {
+            task->data.setup_func();
+        }
+        
         task->state = TASK_STATE_IDLE;
 
         if (task->next == (task_t*)__stop_tasks) {

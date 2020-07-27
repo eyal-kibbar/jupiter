@@ -20,12 +20,6 @@ LOCAL_DEFINES := \
 
 LOCAL_CFLAGS := -Og
 
-# add i2c
-LOCAL_SRC     += $(I2C_SRC) $(I2C_SRC_$(ARCH))
-LOCAL_INC     += $(I2C_INC) $(I2C_INC_$(ARCH))
-LOCAL_DEFINES += $(I2C_DEFINES)
-
-
 include $(BUILD_STATIC_LIB)
 
 # atmega168
@@ -47,12 +41,6 @@ LOCAL_DEFINES := \
 	LOG_LEVEL=1
 
 LOCAL_CFLAGS := -Og
-
-# add i2c
-LOCAL_SRC     += $(I2C_SRC) $(I2C_SRC_$(ARCH))
-LOCAL_INC     += $(I2C_INC) $(I2C_INC_$(ARCH))
-LOCAL_DEFINES += $(I2C_DEFINES)
-
 
 include $(BUILD_STATIC_LIB)
 

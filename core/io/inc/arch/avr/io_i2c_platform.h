@@ -1,5 +1,5 @@
-#ifndef GMD_I2C_PLATFORM_H_
-#define GMD_I2C_PLATFORM_H_
+#ifndef IO_I2C_PLATFORM_H_
+#define IO_I2C_PLATFORM_H_
 
 
 #include <compat/twi.h>
@@ -17,7 +17,6 @@
 
 
 #define twi_get_data(data) do { *((uint8_t*)(data)) = TWDR; } while (0)
-
 #define twi_set_data(data) do { TWDR = (data); } while (0)
 
 
@@ -36,5 +35,10 @@
 
 #define twi_is_ready() (TWCR & _BV(TWINT))
 
+#define IO_I2C_ISR() ISR(TWI_vect)
 
-#endif /* GMD_I2C_PLATFORM_H_ */
+
+void io_i2c_master_platform_init();
+void io_i2c_slave_platform_init(uint8_t slave_addr);
+
+#endif

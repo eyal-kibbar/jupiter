@@ -1,7 +1,6 @@
 #include "ganymede.h"
 #include "gmd_kern.h"
 #include "gmd_sched.h"
-#include "gmd_i2c.h"
 
 #include <stdio.h>
 
@@ -15,12 +14,8 @@ void gmd_panic()
 int main()
 {
     gmd_platform_init();
-    gmd_i2c_init();
     gmd_sched_init();
-
-
     platform_sei();
-
 
     while (1) gmd_sched_loop();
 

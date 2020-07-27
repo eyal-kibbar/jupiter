@@ -2,25 +2,28 @@
 #include "ganymede.h"
 #include "utils.h"
 #include "logging.h"
+#include "io.h"
 
 void regwrite(uint8_t slave_addr, uint8_t addr, void* buf, uint8_t n)
 {
-    gmd_io_tx_t tx[] = {
-        { .isw = 1, .buf = &addr, .len = 1, .off = 0 },
-        { .isw = 1, .buf = buf,   .len = n, .off = 0 }
+    io_tx_t tx[] = {
+        { .mode = IO_TX_MODE_W, .buf = &addr, .len = 1, .off = 0 },
+        { .mode = IO_TX_MODE_W, .buf = buf,   .len = n, .off = 0 }
     };
-
-    gmd_i2c_sg(slave_addr, tx, ARR_SIZE(tx), 0);
+    io_i2c_tx_begin(slave_addr);
+    io_i2c_master_sg(tx, ARR_SIZE(tx), 0);
+    io_i2c_tx_end();
 }
 
 void regread(uint8_t slave_addr, uint8_t addr, void* buf, uint8_t n)
 {
-    gmd_io_tx_t tx[] = {
-        { .isw = 1, .buf = &addr, .len = 1, .off = 0 },
-        { .isw = 0, .buf = buf,   .len = n, .off = 0 }
+    io_tx_t tx[] = {
+        { .mode = IO_TX_MODE_W, .buf = &addr, .len = 1, .off = 0 },
+        { .mode = IO_TX_MODE_R, .buf = buf,   .len = n, .off = 0 }
     };
-    
-    gmd_i2c_sg(slave_addr, tx, ARR_SIZE(tx), 0);
+    io_i2c_tx_begin(slave_addr);
+    io_i2c_master_sg(tx, ARR_SIZE(tx), 0);
+    io_i2c_tx_end();
 }
 
 
@@ -47,5 +50,3 @@ uint16_t regread16(uint8_t slave_addr, uint8_t addr)
     regread(slave_addr, addr, &val, sizeof(val));
     return val;
 }
-
-

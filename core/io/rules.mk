@@ -3,6 +3,7 @@
 # libs:
 # 	spi-dbg
 # 	uart-dbg
+#	i2c-dbg
 #	logging
 #
 # tasks:
@@ -53,6 +54,41 @@ include $(BUILD_STATIC_LIB)
 
 LOCAL_TARGET := atmega328p
 include $(BUILD_STATIC_LIB)
+
+
+# ========================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := i2c-dbg
+LOCAL_DEFINES := \
+	IO_I2C_PRESCALER=1 \
+	LOG_LEVEL=3
+
+LOCAL_EXPORT := \
+	$(LOCAL_PATH)/api \
+	$(LOCAL_PATH)/api/arch/avr \
+
+LOCAL_SRC := \
+	$(LOCAL_PATH)/src/common/io_i2c_master.c \
+	$(LOCAL_PATH)/src/arch/avr/io_i2c_platform.c \
+
+LOCAL_INC := \
+	$(LOCAL_PATH)/inc \
+	$(LOCAL_PATH)/inc/arch/avr
+
+
+LOCAL_STATIC_LIBS := \
+	ganymede-dbg
+
+LOCAL_TARGET := atmega168
+include $(BUILD_STATIC_LIB)
+
+LOCAL_TARGET := atmega328p
+include $(BUILD_STATIC_LIB)
+
+
+
+
 
 
 # ========================================

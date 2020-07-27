@@ -61,7 +61,7 @@ void loop()
              calc_angle(x / 1000.0f, z / 1000.0f),
              calc_angle(y / 1000.0f, z / 1000.0f),
             gx, gy, gz,
-            (int16_t)roundf(1000 * data.temperature));
+            (int16_t)roundf(data.temperature));
 
 }
 

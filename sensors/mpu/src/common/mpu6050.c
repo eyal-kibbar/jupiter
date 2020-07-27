@@ -13,7 +13,7 @@
 #define htons(A) ((((uint16_t)(A) & 0xff00) >> 8) | (((uint16_t)(A) & 0x00ff) << 8))
 #define ntohs htons
 
-#define MPU_TEMPERATURE_OFFSET (-540)
+#define MPU_TEMPERATURE_OFFSET (0)
 #define MPU_TEMPERATURE_SCALE (340)
 
 #define ARR_SIZE(x) (sizeof(x) / sizeof(*(x)))
@@ -29,7 +29,7 @@ static struct mpu_reg_set_s mpu_init_cfg[] = {
     {MPU_ACCEL_CONFIG_ADDR, (0 << MPU_ACCEL_CONFIG_AFS_SEL_SHFT)}, // set accel to +-2g
 
     {MPU_PWR_MGMT_1_ADDR, 0
-      | (1 << MPU_PWR_MGMT_1_CYCLE_SHFT)
+      /*| (1 << MPU_PWR_MGMT_1_CYCLE_SHFT) // sleep between samples*/
       /*| (1 << MPU_PWR_MGMT_1_TEMP_DIS_SHFT)*/
     }, // wake
 
@@ -65,7 +65,6 @@ static void mpu_regwrite(uint8_t addr, uint8_t val)
     io_i2c_tx_begin(MPU_ADDR);
     io_i2c_master_sg(&tx, 1, 0);
     io_i2c_tx_end();
-    LOG_INFO(MPU, "done");
 }
 
 static uint8_t mpu_regread(uint8_t addr)
@@ -109,6 +108,7 @@ void mpu_read(mpu_data_t* data)
 
     val = (int16_t)ntohs(buff[3]);
     data->temperature = 36.53f + (val - MPU_TEMPERATURE_OFFSET) / ((float)MPU_TEMPERATURE_SCALE);
+
     for (i=0; i < 3; ++i) {
         val = (int16_t)ntohs(buff[4 + i]);
         data->gyro[i] = val / 131.0f;

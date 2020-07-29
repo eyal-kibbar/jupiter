@@ -3,9 +3,6 @@
 #include "io.h"
 #include "utils.h"
 
-extern void io_pin_set(uint8_t);
-extern void io_pin_clr(uint8_t);
-
 #include <avr/io.h>
 
 #define SS_PIN 7
@@ -14,17 +11,12 @@ void setup()
 {
     io_uart_init(9600);
     io_logging_init();
-    io_spi_master_init();
-    DDRD |= _BV(SS_PIN);
-    io_pin_set(SS_PIN);
-}
 
-void loop_()
-{
+    io_pin_output(SS_PIN);
     io_pin_set(SS_PIN);
-    gmd_delay(1000);
-    io_pin_clr(SS_PIN);
-    gmd_delay(1000);
+
+    io_spi_master_init();
+
 }
 
 void loop()

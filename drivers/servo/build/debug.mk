@@ -64,9 +64,10 @@ include $(CLEAR_VARS)
 LOCAL_MODULE      := jupiter-servo-tst
 
 LOCAL_STATIC_LIBS := \
-	servo-dbg \
+	servo \
 	ganymede-dbg \
-	logging
+	logging \
+	uart-dbg \
 
 LOCAL_TASKS       := servo-tst
 

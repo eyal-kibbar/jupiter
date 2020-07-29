@@ -1,13 +1,16 @@
 #include "servo.h"
 #include "ganymede.h"
+#include "io.h"
 #include "logging.h"
 
-static int dir = 5;
-static uint8_t k = 50;
+#define MAX_MICROSECONDS 2250
+#define MIN_MICROSECONDS 500
+#define SETP_MICROSECONDS 16
 
 void setup()
 {
-
+    io_uart_init(9600);
+    io_logging_init();
     servo_init();
 
     servo_attach(2);
@@ -17,30 +20,26 @@ void setup()
 
 }
 
+uint16_t microseconds;
+int16_t dir;
+
 void loop()
 {
-    LOG_INFO(SERVO, "loop %d", k);
+    microseconds += dir*SETP_MICROSECONDS;
 
-    if (k <= 50) {
-        dir = 10;
-        k = 50;
+    if (microseconds < MIN_MICROSECONDS) {
+        microseconds = MIN_MICROSECONDS;
+        dir = 1;
+    }
+    else if (MAX_MICROSECONDS < microseconds) {
+        microseconds = MAX_MICROSECONDS;
+        dir = -1;
     }
 
-    if (k >= 120) {
-        k = 120;
-        dir = -10;
-    }
+    LOG_INFO(SERVO, "microseconds %d", microseconds);
+    servo_set_mircoseconds(2, microseconds);
 
-    k += dir;
-
-
-
-
-
-    servo_set(2, k);
-    servo_set(3, 50 + 70 - (k-50));
-
-    gmd_delay(1000);
+    gmd_delay(500);
 }
 
 

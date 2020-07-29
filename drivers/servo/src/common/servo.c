@@ -10,7 +10,7 @@
 
 typedef struct servo_pin_s {
     uint8_t pin_idx;
-    uint8_t duty;
+    uint16_t duty;
 } servo_pin_t;
 
 typedef struct servo_s {
@@ -18,7 +18,7 @@ typedef struct servo_s {
     uint8_t num_attached;
     uint8_t curr;
 
-    uint8_t tick;
+    uint16_t tick;
     uint16_t attached;
     uint16_t mask;
 } servo_t;
@@ -59,7 +59,7 @@ void servo_set_mircoseconds(uint8_t pin, uint16_t microseconds)
     servo_set(pin, microseconds / SERVO_50HZ_TICK_US);
 }
 
-void servo_set(uint8_t pin, uint8_t duty)
+void servo_set(uint8_t pin, uint16_t duty)
 {
     uint8_t i;
 
@@ -85,6 +85,7 @@ static void servo_tick()
 {
     uint8_t need_change = 0;
     const servo_pin_t* c;
+
 
     if (servo.tick == SERVO_50HZ_RESOLUTION) {
         servo.curr = 0;

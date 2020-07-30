@@ -29,12 +29,6 @@ void loop()
     int idx = 0;
     uint8_t payload_len = sizeof(idx);
     uint8_t pipe_idx = 0;
-    static int is_initialized=0;
-
-    if (!is_initialized) {
-        is_initialized = 1;
-        init();
-    }
 
 
     nrf_recv((uint8_t*)&idx, &payload_len, &pipe_idx);

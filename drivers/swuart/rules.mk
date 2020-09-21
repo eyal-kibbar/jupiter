@@ -19,7 +19,8 @@ LOCAL_INC := \
 LOCAL_EXPORT := $(LOCAL_PATH)/api
 
 LOCAL_STATIC_LIBS := \
-	ganymede-dbg
+	ganymede-dbg \
+	logging \
 
 LOCAL_TARGET := atmega168
 include $(BUILD_STATIC_LIB)
@@ -40,7 +41,8 @@ LOCAL_DEFINES := \
 
 LOCAL_STATIC_LIBS := \
 	swuart-dbg \
-	ganymede-dbg
+	ganymede-dbg \
+	logging
 
 LOCAL_SRC := $(LOCAL_PATH)/tst/swuart_test.c
 
@@ -58,7 +60,8 @@ LOCAL_MODULE := jupiter-swuart-tst
 
 LOCAL_STATIC_LIBS := \
 	swuart-dbg \
-	ganymede-dbg
+	ganymede-dbg \
+	logging
 
 LOCAL_TASKS := \
 	swuart-tst

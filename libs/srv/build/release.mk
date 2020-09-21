@@ -17,11 +17,11 @@ LOCAL_EXPORT := $(LOCAL_PATH)/api
 LOCAL_CFLGAS := -O3
 
 LOCAL_STATIC_LIBS := \
-	ganymede
+	ganymede \
+	logging
 
 LOCAL_TARGET := atmega168
 include $(BUILD_STATIC_LIB)
 
 LOCAL_TARGET := atmega328p
 include $(BUILD_STATIC_LIB)
-

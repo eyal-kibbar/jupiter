@@ -1,4 +1,4 @@
-#include "spi_platform.h"
+#include "io_spi_platform.h"
 #include "io_platform.h"
 #include "io.h"
 #include "ganymede.h"
@@ -75,40 +75,33 @@ void io_spi_tx_begin(uint8_t slave_select_pin)
     // select slave
     platform_cli();
 
-    // TODO: handle is_used
+    gmd_wfe(&spi_sg.is_used, 0xFF, 1, 0);
 
     spi_sg.slave_select_pin = slave_select_pin;
     spi_sg.is_used = 1;
+
     io_pin_clr(slave_select_pin);
-}
-void io_spi_tx_end()
-{
-    spi_sg.is_used = 0;
-    io_pin_set(spi_sg.slave_select_pin);
+
     platform_sei();
 }
 
-
-static void io_spi_tx_init(io_tx_t *tx, uint8_t n)
+void io_spi_tx_end()
 {
-    for (; 0 < n; --n, ++tx) {
-        if (tx->mode & IO_TX_MODE_INLINE) {
-            tx->buf = tx->data;
-        }
-    }
+    platform_cli();
+    spi_sg.is_used = 0;
+    io_pin_set(spi_sg.slave_select_pin);
+    platform_sei();
 }
 
 void io_spi_master_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
 {
     uint8_t data = 0;
 
-
     if (0 == n) {
         return;
     }
 
-    io_spi_tx_init(tx, n);
-
+    platform_cli();
     // initialize transactions struct
     spi_sg.tx = tx;
     spi_sg.num = n;
@@ -124,6 +117,7 @@ void io_spi_master_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
 
     // wait until all transactions are complete
     gmd_wfe(&spi_sg.is_done, 0xFF, 0, timeout_ms);
+    platform_sei();
 }
 
 void io_spi_slave_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
@@ -137,8 +131,6 @@ void io_spi_slave_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
         return;
     }
 
-    io_spi_tx_init(tx, n);
-
     platform_cli();
 
     // initialize transactions struct
@@ -151,7 +143,7 @@ void io_spi_slave_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
     if (spi_sg.tx->mode & IO_TX_MODE_W) {
         data = spi_sg.tx->buf[spi_sg.tx->off];
     }
-    
+
     spi_set_data(data);
 
     // wait for select slave to be low

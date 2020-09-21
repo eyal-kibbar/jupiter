@@ -16,7 +16,8 @@ LOCAL_STATIC_LIBS := \
 	ganymede-dbg \
 	servo-dbg \
 	mpu-dbg \
-	srv-dbg
+	srv-dbg \
+	logging
 
 LOCAL_TARGET := atmega168
 include $(BUILD_GMD_TASK)

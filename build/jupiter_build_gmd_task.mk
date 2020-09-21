@@ -63,6 +63,7 @@ $(_DIR_OUT)/tsk$(LOCAL_MODULE).o: $(OBJS)
 	$(OBJCOPY_$(LOCAL_TARGET)) \
 		--redefine-sym task=task_$(TASK_NAME) \
 		--redefine-sym setup=$(TASK_NAME)_setup \
+		--redefine-sym init=$(TASK_NAME)_init \
 		--redefine-sym loop=$(TASK_NAME)_loop \
 		$@
 

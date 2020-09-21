@@ -12,7 +12,9 @@ LOCAL_DEFINES     := \
 	LOG_LEVEL=0  \
 
 
-LOCAL_STATIC_LIBS := ganymede
+LOCAL_STATIC_LIBS := \
+	ganymede \
+	logging
 
 LOCAL_CFLAGS = -O3
 

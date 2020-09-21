@@ -4,8 +4,8 @@
 #include <stdint.h>
 
 
-#define SERVO_50HZ_COMPARE     250
-#define SERVO_50HZ_RESOLUTION  160
+#define SERVO_50HZ_COMPARE     64
+#define SERVO_50HZ_RESOLUTION  625
 #define SERVO_50HZ_SCALER      8
 
 // microseconds per 1 resolution value
@@ -18,7 +18,7 @@
 void servo_init(void);
 
 void servo_attach(uint8_t pin);
-void servo_set(uint8_t pin, uint8_t duty);
+void servo_set(uint8_t pin, uint16_t duty);
 void servo_set_mircoseconds(uint8_t pin, uint16_t microseconds);
 
 

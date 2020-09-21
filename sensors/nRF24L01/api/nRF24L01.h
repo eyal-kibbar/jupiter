@@ -8,10 +8,13 @@ typedef struct nrf_cfg_s {
     uint8_t csn_pin;
     uint8_t ce_pin;
     uint8_t irq_pin;
+    uint8_t channel;
 } nrf_cfg_t;
 
 
 void nrf_init(const nrf_cfg_t* cfg);
+
+void nrf_test();
 
 /**
  * initialize a transmission pipe

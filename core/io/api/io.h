@@ -9,9 +9,9 @@
 
 typedef struct io_tx_s {
     uint8_t  mode;
-    uint8_t  len;
-    uint8_t  off;
-    uint8_t* buf;
+    volatile uint8_t  len;
+    volatile uint8_t  off;
+    volatile uint8_t* buf;
 } io_tx_t;
 
 void io_logging_init();

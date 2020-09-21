@@ -32,8 +32,15 @@
 #define twi_send_ack() \
     do { TWCR = _BV(TWINT) | _BV(TWEA) | _BV(TWEN) | _BV(TWIE); } while (0)
 
+#define twi_send_nack() \
+        do { TWCR = _BV(TWINT) | _BV(TWEN) | _BV(TWIE); } while (0)
 
 #define twi_is_ready() (TWCR & _BV(TWINT))
+
+
+#define twi_enable_auto_ack()  do { TWCR = _BV(TWEA) | _BV(TWEN) | _BV(TWIE); } while (0)
+#define twi_disable_auto_ack() do { TWCR = _BV(TWEN); } while (0)
+
 
 #define IO_I2C_ISR() ISR(TWI_vect)
 

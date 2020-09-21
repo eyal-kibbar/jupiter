@@ -20,6 +20,7 @@ void io_i2c_master_platform_init()
 
 void io_i2c_slave_platform_init(uint8_t slave_addr)
 {
-    TWAR = (0 == slave_addr) ? 0x1 : slave_addr << 1;;
-    TWCR = _BV(TWEA);
+    TWAR = (0 == slave_addr) ? 0x1 : slave_addr << 1;
+    TWAMR = 0;
+    //TWCR = _BV(TWEN);
 }

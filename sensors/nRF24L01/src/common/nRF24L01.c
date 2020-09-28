@@ -13,8 +13,10 @@
 
 
 typedef struct nrf_s {
-    uint8_t csn_pin;
-    uint8_t ce_pin;
+    uint8_t  csn_pin;
+    uint8_t  ce_pin;
+    uint8_t* irq_port;
+    uint8_t  irq_mask;
 } nrf_t;
 
 
@@ -111,6 +113,7 @@ void nrf_init(const nrf_cfg_t* cfg)
 
     nrf.csn_pin = cfg->csn_pin;
     nrf.ce_pin  = cfg->ce_pin;
+    io_pin_port(cfg->irq_pin, &nrf.irq_port, &nrf.irq_mask);
 
     io_pin_input(cfg->irq_pin);
     io_pin_output(nrf.csn_pin);
@@ -167,9 +170,6 @@ void nrf_test()
         status = nrf_reg_read(addr, &val);
         LOG_INFO(NRF, "addr 0x%02x: 0x%02x status: 0x%02x", addr, val, status);
         gmd_delay(10);
-
-        //nrf_send_cmd(NRF_CMD_NOP);
-        //gmd_delay(10);
     }
 
 
@@ -320,16 +320,17 @@ void nrf_recv(uint8_t* payload, uint8_t* max_payload_len, uint8_t* pipe_idx)
 
     // wait for packet to be available
     do {
+        // wait for interrupt, activated on low
+        gmd_wfe(nrf.irq_port, nrf.irq_mask, nrf.irq_mask, 0);
+
         status = nrf_reg_read(NRF_FIFO_STATUS_ADDR, &fifo_status);
-        //LOG_INFO(NRF, "rx status: %02x fifo: %02x", status, fifo_status & NRF_FIFO_STATUS_RX_EMPTY_BMSK);
-        //gmd_delay(1000);
+        LOG_INFO(NRF, "rx status: %02x fifo: %02x", status, fifo_status);
         if (0 == (fifo_status & NRF_FIFO_STATUS_RX_EMPTY_BMSK)) {
             break;
         }
-        gmd_delay(10);
+        //gmd_delay(100);
+
     } while (1); //(fifo_status & NRF_FIFO_STATUS_RX_EMPTY_BMSK);
-
-
 
     // read payload
     io_spi_tx_begin(nrf.csn_pin);

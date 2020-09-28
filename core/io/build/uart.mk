@@ -1,37 +1,19 @@
 
 
 # libs:
-#   io-dbg
-# 	spi-dbg
 # 	uart-dbg
-#	i2c-mstr-dbg
-#	i2c-slav-dbg
-#	logging
+# 	uart0-dbg
+# 	uart1-dbg
+#   uart-multicore-dbg
 #
 # tasks:
-#	spi-slav-tst
-#	spi-mstr-tst
-#
-#	i2c-slav-tst
-#	i2c-mstr-tst
-#
 #	uart-tst
+#   uart-multicore-tst
 #
 # exe:
-#	io-tst-spi-mstr
-#	io-tst-spi-slav
-#
-#	io-tst-i2c-mstr
-#	io-tst-i2c-slav
-#
 #	io-tst-uart
+#	io-tst-uart-multicore
 #
-
-
-
-
-
-
 
 # ========================================
 include $(CLEAR_VARS)
@@ -94,6 +76,7 @@ LOCAL_OBJCOPY_ARGS := \
 	--redefine-sym io_uart_init_core=io_uart_init_core0 \
 	--redefine-sym io_uart_platform_init=io_uart_platform_init_core0 \
 	--redefine-sym io_uart_sg_core=io_uart_sg_core0 \
+	--redefine-sym p_uart=p_uart_core0 \
 	--redefine-sym uart_used=uart_used_core0 \
 
 
@@ -130,6 +113,7 @@ LOCAL_OBJCOPY_ARGS := \
 	--redefine-sym io_uart_init_core=io_uart_init_core1 \
 	--redefine-sym io_uart_platform_init=io_uart_platform_init_core1 \
 	--redefine-sym io_uart_sg_core=io_uart_sg_core1 \
+	--redefine-sym p_uart=p_uart_core1 \
 	--redefine-sym uart_used=uart_used_core1 \
 
 
@@ -186,7 +170,7 @@ include $(BUILD_GMD_TASK)
 LOCAL_TARGET := atmega328p
 include $(BUILD_GMD_TASK)
 
-LOCAL_TARGET      := atmega2560
+LOCAL_TARGET := atmega2560
 include $(BUILD_GMD_TASK)
 
 
@@ -250,5 +234,5 @@ LOCAL_STATIC_LIBS := \
 LOCAL_TASKS       := \
 	uart-multicore-tst
 
-LOCAL_TARGET      := atmega2560
+LOCAL_TARGET := atmega2560
 include $(BUILD_EXEC)

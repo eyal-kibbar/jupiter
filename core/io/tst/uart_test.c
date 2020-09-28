@@ -6,7 +6,8 @@
 
 void setup()
 {
-    io_uart_init(9600);
+    io_uart_init(0, 9600);
+    io_uart_init(1, 9600);
     io_logging_init();
 }
 
@@ -33,7 +34,7 @@ void loop()
         },
     };
 
-    io_uart_sg(&tx[0], 2, 0);
+    io_uart_sg(0, &tx[0], 2, 0);
 
     LOG_INFO(UART, "testing 123");
 }

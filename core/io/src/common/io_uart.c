@@ -12,7 +12,7 @@ typedef struct uart_sg_s {
 static volatile uart_sg_t* p_uart = NULL;
 static volatile uint8_t uart_used = 0;
 
-void io_uart_init(uint16_t baud_rate)
+void io_uart_init_core(uint16_t baud_rate)
 {
     io_uart_platform_init(baud_rate);
 }
@@ -74,7 +74,7 @@ IO_UART_RX_ISR()
     }
 }
 
-void io_uart_sg(io_tx_t* tx, uint8_t n, uint16_t timeout_ms)
+void io_uart_sg_core(io_tx_t* tx, uint8_t n, uint16_t timeout_ms)
 {
     uart_sg_t sg;
     uint16_t remaining_timeout_ms = timeout_ms;

@@ -2,7 +2,7 @@
 
 include $(CHECK_LOCALS)
 
-_DIR_OUT := $(DIR_OUT)/$(LOCAL_TARGET)
+_DIR_OUT := $(DIR_OUT)/$(LOCAL_TARGET)/tasks
 
 DIR_OBJS := $(_DIR_OUT)/$(LOCAL_MODULE)/objs
 $(shell mkdir -p $(DIR_OBJS))

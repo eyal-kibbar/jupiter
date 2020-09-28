@@ -10,7 +10,7 @@ static int io_logging_uart_putchar(char c, FILE *stream)
         .off = 0
     };
 
-    io_uart_sg(&tx, 1, 0);
+    io_uart_sg(0, &tx, 1, 0);
     return 1;
 }
 

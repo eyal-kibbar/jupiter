@@ -37,6 +37,49 @@ LOCAL_INC     := $(COMMON_INC) $(INC_$(ARCH))
 LOCAL_EXPORT  := $(COMMON_API) $(LOCAL_PATH)/api/arch/$(ARCH)
 LOCAL_DEFINES := \
 	$(COMMON_DEFINES) \
+	DEBUG \# atmega168
+# ========================================
+include $(CLEAR_VARS)
+
+LOCAL_TARGET := atmega168
+LOCAL_MODULE := ganymede-dbg
+
+ARCH := $(ARCH_$(LOCAL_TARGET))
+
+# add common
+LOCAL_SRC     := $(COMMON_SRC) $(SRC_$(ARCH))
+LOCAL_INC     := $(COMMON_INC) $(INC_$(ARCH))
+LOCAL_EXPORT  := $(COMMON_API) $(LOCAL_PATH)/api/arch/$(ARCH)
+LOCAL_DEFINES := \
+	$(COMMON_DEFINES) \
+	DEBUG \
+	LOG_LEVEL=1
+
+LOCAL_CFLAGS := -Og
+
+include $(BUILD_STATIC_LIB)
+	LOG_LEVEL=1
+
+LOCAL_CFLAGS := -Og
+
+include $(BUILD_STATIC_LIB)
+
+
+# atmega2560
+# ========================================
+include $(CLEAR_VARS)
+
+LOCAL_TARGET := atmega2560
+LOCAL_MODULE := ganymede-dbg
+
+ARCH := $(ARCH_$(LOCAL_TARGET))
+
+# add common
+LOCAL_SRC     := $(COMMON_SRC) $(SRC_$(ARCH))
+LOCAL_INC     := $(COMMON_INC) $(INC_$(ARCH))
+LOCAL_EXPORT  := $(COMMON_API) $(LOCAL_PATH)/api/arch/$(ARCH)
+LOCAL_DEFINES := \
+	$(COMMON_DEFINES) \
 	DEBUG \
 	LOG_LEVEL=1
 
@@ -103,6 +146,10 @@ include $(BUILD_GMD_TASK)
 LOCAL_TARGET := atmega328p
 include $(BUILD_GMD_TASK)
 
+LOCAL_TARGET := atmega2560
+include $(BUILD_GMD_TASK)
+
+
 # test
 # ========================================
 include $(CLEAR_VARS)
@@ -118,6 +165,9 @@ LOCAL_TARGET := atmega168
 include $(BUILD_GMD_TASK)
 
 LOCAL_TARGET := atmega328p
+include $(BUILD_GMD_TASK)
+
+LOCAL_TARGET := atmega2560
 include $(BUILD_GMD_TASK)
 
 # test
@@ -137,6 +187,12 @@ LOCAL_DEFINES := \
 include $(BUILD_GMD_TASK)
 
 LOCAL_TARGET := atmega328p
+LOCAL_DEFINES := \
+	$(COMMON_LOCAL_DEFINES) \
+	 STACK_SIZE=256
+include $(BUILD_GMD_TASK)
+
+LOCAL_TARGET := atmega2560
 LOCAL_DEFINES := \
 	$(COMMON_LOCAL_DEFINES) \
 	 STACK_SIZE=256
@@ -166,4 +222,7 @@ LOCAL_TARGET      := atmega168
 include $(BUILD_EXEC)
 
 LOCAL_TARGET      := atmega328p
+include $(BUILD_EXEC)
+
+LOCAL_TARGET      := atmega2560
 include $(BUILD_EXEC)

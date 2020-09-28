@@ -3,7 +3,7 @@
 include $(CHECK_LOCALS)
 
 
-_DIR_OUT := $(DIR_OUT)/$(LOCAL_TARGET)
+_DIR_OUT := $(DIR_OUT)/$(LOCAL_TARGET)/libs
 
 DIR_OBJS := $(_DIR_OUT)/$(LOCAL_MODULE)/objs
 $(shell mkdir -p $(DIR_OBJS))
@@ -67,20 +67,21 @@ $(_DIR_OUT)/lib$(LOCAL_MODULE).a: $(USED_LIBS)
 $(_DIR_OUT)/lib$(LOCAL_MODULE).a: $(OBJS)
 	$(AR_$(LOCAL_TARGET)) rcs $@ \
 		$^
-	
+
 
 # object files rules
-$(DIR_OBJS)/%.o: LOCAL_CFLAGS   := $(LOCAL_CFLAGS)
-$(DIR_OBJS)/%.o: CFLAGS_INCS    := $(CFLAGS_INCS)
-$(DIR_OBJS)/%.o: CFLGAS_DEFINES := $(CFLGAS_DEFINES)
-$(DIR_OBJS)/%.o: LOCAL_TARGET   := $(LOCAL_TARGET)
+$(DIR_OBJS)/%.o: LOCAL_CFLAGS       := $(LOCAL_CFLAGS)
+$(DIR_OBJS)/%.o: CFLAGS_INCS        := $(CFLAGS_INCS)
+$(DIR_OBJS)/%.o: CFLGAS_DEFINES     := $(CFLGAS_DEFINES)
+$(DIR_OBJS)/%.o: LOCAL_TARGET       := $(LOCAL_TARGET)
+$(DIR_OBJS)/%.o: LOCAL_OBJCOPY_ARGS := $(LOCAL_OBJCOPY_ARGS)
 $(DIR_OBJS)/%.o: $(ROOT_PATH)/%.c
 	@mkdir -p $(@D)
 	$(CC_$(LOCAL_TARGET)) -MMD -MP -MF $@.d -o $@ $(CFLAGS) $(CFLAGS_$(LOCAL_TARGET)) $(LOCAL_CFLAGS) $(CFLGAS_DEFINES) $(CFLAGS_INCS) -c $<
-	
+	$(OBJCOPY_$(LOCAL_TARGET)) $(LOCAL_OBJCOPY_ARGS) $@
+
 
 
 # adding library to all libs list
-$(info adding $(_DIR_OUT)/lib$(LOCAL_MODULE).a) 
+$(info adding $(_DIR_OUT)/lib$(LOCAL_MODULE).a)
 LIBS += $(_DIR_OUT)/lib$(LOCAL_MODULE).a
-

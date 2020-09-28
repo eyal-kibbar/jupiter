@@ -8,7 +8,7 @@
 
 /** GPIO **/
 /******************************************************************************/
-void io_pin_port(uint8_t pin, uint8_t* port, uint8_t* mask);
+void io_pin_port(uint8_t pin, uint8_t** port, uint8_t* mask);
 
 void io_pin_output(uint8_t pin);
 void io_pin_input(uint8_t pin);

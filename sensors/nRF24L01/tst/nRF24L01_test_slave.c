@@ -7,7 +7,7 @@
 
 void setup()
 {
-    io_uart_init(9600);
+    io_uart_init(0, 9600);
     io_logging_init();
     io_pin_output(SS_PIN);
     io_pin_set(SS_PIN);

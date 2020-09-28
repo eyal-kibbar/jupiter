@@ -1,14 +1,14 @@
 #include "io_platform.h"
 #include <avr/io.h>
 
-void io_pin_port(uint8_t pin, uint8_t* port, uint8_t* mask)
+void io_pin_port(uint8_t pin, uint8_t** port, uint8_t* mask)
 {
     if (pin < 8) {
-        *port = PORTD;
+        *port = (uint8_t*)&PIND;
         *mask = _BV(pin);
     }
     else {
-        *port = PORTB;
+        *port = (uint8_t*)&PINB;
         *mask = _BV(pin - 8);
     }
 }

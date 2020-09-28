@@ -1,6 +1,7 @@
 
 
 # libs:
+#   io-dbg
 # 	spi-dbg
 # 	uart-dbg
 #	i2c-mstr-dbg
@@ -36,6 +37,35 @@
 
 LOCAL_PATH := $(call my-dir)
 
+# ========================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := io-dbg
+LOCAL_DEFINES :=
+LOCAL_EXPORT := \
+	$(LOCAL_PATH)/api \
+	$(LOCAL_PATH)/api/arch/avr \
+
+LOCAL_SRC := \
+	$(LOCAL_PATH)/src/arch/avr/io_platform.c \
+
+LOCAL_INC := \
+	$(LOCAL_PATH)/inc \
+	$(LOCAL_PATH)/inc/arch/avr
+
+
+LOCAL_STATIC_LIBS :=
+
+LOCAL_TARGET := atmega168
+include $(BUILD_STATIC_LIB)
+
+LOCAL_TARGET := atmega328p
+include $(BUILD_STATIC_LIB)
+
+LOCAL_TARGET := atmega2560
+include $(BUILD_STATIC_LIB)
+
+
 
 # ========================================
 include $(CLEAR_VARS)
@@ -60,6 +90,9 @@ LOCAL_TARGET := atmega168
 include $(BUILD_STATIC_LIB)
 
 LOCAL_TARGET := atmega328p
+include $(BUILD_STATIC_LIB)
+
+LOCAL_TARGET := atmega2560
 include $(BUILD_STATIC_LIB)
 
 
@@ -109,7 +142,6 @@ LOCAL_EXPORT := \
 LOCAL_SRC := \
 	$(LOCAL_PATH)/src/common/io_i2c_slave.c \
 	$(LOCAL_PATH)/src/arch/avr/io_i2c_platform.c \
-	$(LOCAL_PATH)/src/arch/avr/io_platform.c \
 
 LOCAL_INC := \
 	$(LOCAL_PATH)/inc \
@@ -117,6 +149,7 @@ LOCAL_INC := \
 
 
 LOCAL_STATIC_LIBS := \
+	io-dbg \
 	ganymede-dbg
 
 LOCAL_TARGET := atmega168
@@ -229,7 +262,6 @@ LOCAL_EXPORT := \
 LOCAL_SRC := \
 	$(LOCAL_PATH)/src/common/io_spi.c \
 	$(LOCAL_PATH)/src/arch/avr/io_spi_platform.c \
-	$(LOCAL_PATH)/src/arch/avr/io_platform.c
 
 LOCAL_INC := \
 	$(LOCAL_PATH)/inc \
@@ -237,6 +269,7 @@ LOCAL_INC := \
 
 
 LOCAL_STATIC_LIBS := \
+	io-dbg \
 	ganymede-dbg
 
 LOCAL_TARGET := atmega168
@@ -297,6 +330,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE      := io-tst-spi-mstr
 
 LOCAL_STATIC_LIBS := \
+	io-dbg \
 	spi-dbg \
 	ganymede-dbg \
 	uart-dbg \
@@ -324,6 +358,7 @@ LOCAL_STATIC_LIBS := \
 	ganymede-dbg \
 	uart-dbg \
 	logging \
+	io-dbg \
 
 LOCAL_TASKS       := \
 	spi-slav-tst
@@ -336,75 +371,4 @@ LOCAL_TARGET      := atmega328p
 include $(BUILD_EXEC)
 
 
-
-
-# ========================================
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := uart-dbg
-LOCAL_DEFINES := \
-	LOG_LEVEL=3
-
-LOCAL_EXPORT := \
-	$(LOCAL_PATH)/api \
-	$(LOCAL_PATH)/api/arch/avr \
-
-LOCAL_SRC := \
-	$(LOCAL_PATH)/src/common/io_uart.c \
-	$(LOCAL_PATH)/src/arch/avr/io_uart_platform.c \
-
-LOCAL_INC := \
-	$(LOCAL_PATH)/inc \
-	$(LOCAL_PATH)/inc/arch/avr
-
-
-LOCAL_STATIC_LIBS := \
-	ganymede-dbg
-
-LOCAL_TARGET := atmega168
-include $(BUILD_STATIC_LIB)
-
-LOCAL_TARGET := atmega328p
-include $(BUILD_STATIC_LIB)
-
-# ========================================
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := uart-tst
-
-LOCAL_DEFINES := \
-	STACK_SIZE=256 \
-	LOG_LEVEL=3
-
-LOCAL_STATIC_LIBS := \
-	uart-dbg \
-	ganymede-dbg \
-	logging
-
-LOCAL_SRC := $(LOCAL_PATH)/tst/uart_test.c
-
-LOCAL_TARGET := atmega168
-include $(BUILD_GMD_TASK)
-
-LOCAL_TARGET := atmega328p
-include $(BUILD_GMD_TASK)
-
-
-# ========================================
-include $(CLEAR_VARS)
-LOCAL_MODULE      := io-tst-uart
-
-LOCAL_STATIC_LIBS := \
-	uart-dbg \
-	ganymede-dbg \
-	logging \
-
-LOCAL_TASKS       := \
-	uart-tst
-
-
-LOCAL_TARGET      := atmega168
-include $(BUILD_EXEC)
-
-LOCAL_TARGET      := atmega328p
-include $(BUILD_EXEC)
+include $(LOCAL_PATH)/build/uart/rules.mk

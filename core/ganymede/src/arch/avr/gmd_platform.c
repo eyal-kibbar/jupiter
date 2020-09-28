@@ -12,6 +12,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+#include <avr/wdt.h>
 
 struct sched_context_s {
     uint8_t  regs[16];
@@ -128,8 +129,30 @@ ISR(TIMER2_OVF_vect)
     ++gmd_timer_tick;
 }
 
+/**
+ * Watchdog
+ * ========================================
+ **/
+
+#define		wdr()	asm("wdr"::)
+
+__attribute__((naked))
+__attribute__((section(".init3")))
+ void watchdog_reset(void)
+{
+    wdr();
+    wdt_disable();
+}
+
+void gmd_wdg_reset()
+{
+    wdr();
+}
 
 void gmd_platform_init()
 {
+    wdr();
+    //WDTCSR = _BV(WDE) | _BV(WDP3);
+
     gmd_platform_timer_init();
 }

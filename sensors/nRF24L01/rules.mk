@@ -21,6 +21,7 @@ LOCAL_STATIC_LIBS := \
 	ganymede-dbg \
 	spi-dbg \
 	logging \
+	io-dbg \
 
 LOCAL_TARGET := atmega168
 include $(BUILD_STATIC_LIB)
@@ -43,6 +44,7 @@ LOCAL_STATIC_LIBS := \
 	nRF24L01-dbg \
 	ganymede-dbg \
 	logging \
+	io-dbg \
 
 LOCAL_SRC := $(LOCAL_PATH)/tst/nRF24L01_test_master.c
 
@@ -65,6 +67,7 @@ LOCAL_STATIC_LIBS := \
 	nRF24L01-dbg \
 	ganymede-dbg \
 	logging \
+	io-dbg \
 
 LOCAL_SRC := $(LOCAL_PATH)/tst/nRF24L01_test_slave.c
 
@@ -85,6 +88,7 @@ LOCAL_STATIC_LIBS := \
 	spi-dbg \
 	uart-dbg \
 	logging \
+	io-dbg \
 
 
 LOCAL_TASKS       := \
@@ -107,6 +111,7 @@ LOCAL_STATIC_LIBS := \
 	spi-dbg \
 	uart-dbg \
 	logging \
+	io-dbg \
 
 
 LOCAL_TASKS       := \

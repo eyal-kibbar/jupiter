@@ -91,7 +91,7 @@ void gmd_sched_init()
         if (NULL != task->data.setup_func) {
             task->data.setup_func();
         }
-        
+
         task->state = TASK_STATE_IDLE;
 
         if (task->next == (task_t*)__stop_tasks) {
@@ -108,9 +108,11 @@ void gmd_sched_loop()
     uint8_t maysleep;
     uint8_t curtick;
 
+
+
     // run all idle tasks
     for (task = gmd_sched.first; task; task = task->next) {
-
+        gmd_wdg_reset();
         if (TASK_STATE_IDLE == task->state) {
             gmd_sched.curr->state = TASK_STATE_IDLE;
             sched_task_switch(task);
@@ -141,7 +143,7 @@ void gmd_sched_loop()
         // stop sleeping if an idle task is encountered
         maysleep &= !(TASK_STATE_IDLE == task->state);
     }
-
+    gmd_wdg_reset();
     if (maysleep) {
         gmd_platform_sleep();
     }

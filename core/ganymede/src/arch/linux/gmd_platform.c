@@ -78,7 +78,10 @@ uint16_t gmd_ms2ticks(uint16_t ms, uint16_t* out_us)
     return ms;
 }
 
-
+void gmd_wdg_reset()
+{
+    
+}
 /**
  * log
  * ========================================

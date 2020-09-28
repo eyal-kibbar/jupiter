@@ -27,39 +27,17 @@ static void io_i2c_next_tx()
     }
 }
 
-
-#include "io_uart_platform.h"
-char p[5];
 static void io_i2c_isr()
 {
 
     uint8_t data;
     uint8_t status;
 
-    io_pin_set(10);
-
     if (NULL == p_i2c || p_i2c->state) {
         return;
     }
 
-
-    status = TWSR;
-    p_i2c->state = 1;
-
-
-    {
-
-
-        sprintf(p, "%02x", status);
-
-        while (!uart_is_ready_tx());
-        uart_set_data(p[0]);
-        while (!uart_is_ready_tx());
-        uart_set_data(p[1]);
-    }
-
-    //twi_get_status(&status);
-    return;
+    twi_get_status(&status);
 
     switch (status) {
 
@@ -115,7 +93,6 @@ IO_I2C_ISR()
 void io_i2c_slave_init(uint8_t slave_addr)
 {
     io_i2c_slave_platform_init(slave_addr);
-    io_pin_output(10);
 }
 
 void io_i2c_slave_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)

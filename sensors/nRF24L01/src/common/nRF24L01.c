@@ -149,7 +149,6 @@ void nrf_init(const nrf_cfg_t* cfg)
 
     // powerup
     nrf_reg_write(NRF_CONFIG_ADDR,
-        (0x1 << NRF_CONFIG_EN_CRC_SHFT) | // enable CRC
         (0x1 << NRF_CONFIG_CRCO_SHFT)   | // 2 bytes CRC
         (0x1 << NRF_CONFIG_PWR_UP_SHFT) | // power up device
         (0x1 << NRF_CONFIG_EN_CRC_SHFT)   // enable crc
@@ -273,6 +272,8 @@ void nrf_send(uint8_t* payload, uint8_t payload_len)
     // wait for transmission to be available
     do {
         status = nrf_reg_read(NRF_FIFO_STATUS_ADDR, &fifo_status);
+        //gmd_delay(10);
+        LOG_INFO(NRF, "status: %x fifo_status: %x", status, fifo_status);
     } while (0 == (fifo_status & NRF_FIFO_STATUS_TX_EMPTY_BMSK));
 
     // write payload
@@ -286,6 +287,7 @@ void nrf_send(uint8_t* payload, uint8_t payload_len)
     // wait for transmission to complete
     do {
         status = nrf_reg_read(NRF_FIFO_STATUS_ADDR, &fifo_status);
+        //gmd_delay(10);
     } while (0 == (status & (NRF_STATUS_TX_DS_BMSK|NRF_STATUS_MAX_RT_BMSK)));
 
     LOG_INFO(NRF, "tx status: %02x", status);
@@ -293,6 +295,9 @@ void nrf_send(uint8_t* payload, uint8_t payload_len)
     // reset status
     io_pin_clr(nrf.ce_pin);
     nrf_reg_write(NRF_STATUS_ADDR, NRF_STATUS_TX_DS_BMSK|NRF_STATUS_MAX_RT_BMSK);
+    if (status & NRF_STATUS_MAX_RT_BMSK) {
+        nrf_send_cmd(NRF_CMD_FLUSH_TX);
+    }
 }
 
 void nrf_recv(uint8_t* payload, uint8_t* max_payload_len, uint8_t* pipe_idx)

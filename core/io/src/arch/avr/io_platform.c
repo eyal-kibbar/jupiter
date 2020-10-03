@@ -44,6 +44,16 @@ void io_pin_set(uint8_t pin)
     }
 }
 
+uint8_t io_pin_get(uint8_t pin)
+{
+    if (pin < 8) {
+        return !!(PIND & _BV(pin));
+    }
+    else {
+        return !!(PINB & _BV(pin - 8));
+    }
+}
+
 void io_pin_clr(uint8_t pin)
 {
     if (pin < 8) {

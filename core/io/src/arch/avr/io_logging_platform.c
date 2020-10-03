@@ -3,14 +3,22 @@
 
 static int io_logging_uart_putchar(char c, FILE *stream)
 {
-    io_tx_t tx = {
-        .mode = IO_TX_MODE_W,
-        .buf = (uint8_t*)&c,
-        .len = 1,
-        .off = 0
-    };
+    static uint8_t log_buffer[LOG_BUFFER_SIZE];
+    static uint8_t log_buffer_idx = 0;
 
-    io_uart_sg(0, &tx, 1, 0);
+    log_buffer[log_buffer_idx++] = (uint8_t)c;
+
+    // flush
+    if (c == '\n' || LOG_BUFFER_SIZE == log_buffer_idx) {
+        io_tx_t tx = {
+            .mode = IO_TX_MODE_W,
+            .buf = (uint8_t*)log_buffer,
+            .len = log_buffer_idx,
+            .off = 0
+        };
+        io_uart_sg(LOG_UART_CORE_IDX, &tx, 1, 0);
+        log_buffer_idx = 0;
+    }
     return 1;
 }
 

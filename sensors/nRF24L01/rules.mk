@@ -30,6 +30,37 @@ LOCAL_TARGET := atmega328p
 include $(BUILD_STATIC_LIB)
 
 
+# ========================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := nRF24L01
+
+LOCAL_DEFINES := \
+	RELEASE
+
+
+LOCAL_SRC := \
+	$(LOCAL_PATH)/src/common/nRF24L01.c
+
+LOCAL_INC := \
+	$(LOCAL_PATH)/inc
+
+LOCAL_EXPORT := $(LOCAL_PATH)/api
+
+LOCAL_STATIC_LIBS := \
+	ganymede \
+	spi \
+	logging \
+	io \
+
+LOCAL_CFLAGS := -O3
+
+LOCAL_TARGET := atmega168
+include $(BUILD_STATIC_LIB)
+
+LOCAL_TARGET := atmega328p
+include $(BUILD_STATIC_LIB)
+
 
 # ========================================
 include $(CLEAR_VARS)

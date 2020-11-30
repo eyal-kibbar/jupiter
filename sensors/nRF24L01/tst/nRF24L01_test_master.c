@@ -20,7 +20,7 @@ void init()
     nrf_cfg_t cfg = {
         .csn_pin = SS_PIN,
         .ce_pin = 9,
-        .irq_pin = 5,
+        .irq_pin = 0xFF,//8,
         .channel = 76
     };
     nrf_init(&cfg);
@@ -34,15 +34,20 @@ void init()
 
 void loop()
 {
+    int ack_pay;
+    uint8_t ack_pay_size = sizeof(ack_pay);
+    uint8_t ack_pay_pipe_idx;
     static int idx = 0;
 
-    //while(1);
     ++idx;
 
     LOG_INFO(NRF_MSTR, "sending %d", idx);
     nrf_send((uint8_t*)&idx, sizeof(idx));
-    //nrf_test();
-    gmd_delay(3000);
+    if (0 == nrf_recv((uint8_t*)&ack_pay, &ack_pay_size, &ack_pay_pipe_idx)) {
+        LOG_INFO(NRF_MSTR, "got %d bytes: %d, pipe: %d", ack_pay_size, ack_pay, ack_pay_pipe_idx);
+    }
+
+    gmd_delay(10000);
 
 }
 

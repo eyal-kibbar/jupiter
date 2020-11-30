@@ -61,6 +61,10 @@ void gmd_platform_context_swap(
 void gmd_platform_sleep()
 {
     cli();
+
+    // disable ADC when sleeping
+    ADCSRA = 0;
+
     // TODO: calculate the best sleep mode
     set_sleep_mode(SLEEP_MODE_IDLE);
 

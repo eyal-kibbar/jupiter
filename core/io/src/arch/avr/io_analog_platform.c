@@ -1,11 +1,14 @@
 #include "io_platform.h"
 #include "ganymede.h"
 #include <avr/io.h>
+#include <avr/sleep.h>
+#include <avr/interrupt.h>
 
+static uint8_t adcsra;
 
 void io_analog_init()
 {
-    uint8_t adcsra;
+
 
     #if F_CPU >= 16000000 // 16 MHz / 128 = 125 KHz
         adcsra = _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0);
@@ -22,12 +25,9 @@ void io_analog_init()
 	#endif
 	// enable a2d conversions
     adcsra |= _BV(ADEN);
-
-    ADCSRA = adcsra;
     DIDR0 = _BV(ADC5D) | _BV(ADC4D)| _BV(ADC3D)| _BV(ADC2D)| _BV(ADC1D)| _BV(ADC0D);
 }
 
-#include <avr/sleep.h>
 
 void io_analog_read(uint8_t pin, enum io_analog_ref_e ref, uint16_t* val)
 {
@@ -43,11 +43,7 @@ void io_analog_read(uint8_t pin, enum io_analog_ref_e ref, uint16_t* val)
 
     ADMUX = mux | (pin & 0xF);
 
-    //SMCR = _BV(SM0) | _BV(SE);
-    //sleep_cpu();
-    //sleep_disable();
-
-    ADCSRA |= _BV(ADSC);
+    ADCSRA = adcsra | _BV(ADSC);
 
     // wait for ADC conversation to end
     //gmd_wfe(&ADCSRA, _BV(ADSC), _BV(ADSC), 0);
@@ -57,5 +53,4 @@ void io_analog_read(uint8_t pin, enum io_analog_ref_e ref, uint16_t* val)
     // hardware bug: ADCL must be read before ADCH
     p_val[0] = ADCL;
     p_val[1] = ADCH;
-
 }

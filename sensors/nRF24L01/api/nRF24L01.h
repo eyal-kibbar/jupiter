@@ -39,9 +39,10 @@ void nrf_recv_open_pipe(uint8_t pipe_idx, uint8_t* addr, uint8_t addr_len);
 void nrf_recv_set();
 void nrf_send_set();
 
-void nrf_send(uint8_t* payload, uint8_t payload_len);
-void nrf_recv(uint8_t* payload, uint8_t* max_payload_len, uint8_t* pipe_idx);
+int nrf_send(uint8_t* payload, uint8_t payload_len);
+void nrf_send_pending(uint8_t pipe_idx, uint8_t* payload, uint8_t payload_len);
 
+int nrf_recv(uint8_t* payload, uint8_t* max_payload_len, uint8_t* pipe_idx);
 
 
 

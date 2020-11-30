@@ -50,12 +50,12 @@ void loop()
     uint8_t payload_len = sizeof(pkt);
     uint8_t pipe_idx = 0;
 
-    LOG_INFO(RADIO_RX, "receiving");
+    //LOG_INFO(RADIO_RX, "receiving");
     nrf_recv((uint8_t*)&pkt, &payload_len, &pipe_idx);
 
     LOG_INFO(RADIO_RX, "got: %d, pipe %d", pkt.pot0, pipe_idx);
 
-    servo_set_mircoseconds(2, pkt.pot0 + 500);//map(pkt.pot0, 0, 1024, 500, 2000));
+    servo_set_mircoseconds(2, map(pkt.pot0, 0, 1024, 500, 2000));
 
 }
 

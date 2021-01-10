@@ -4,9 +4,18 @@
 #include <avr/interrupt.h>
 #include "servo_platform_api.h"
 
-#define servo_platform_cli() cli()
-#define servo_platform_sei() sei()
+#define SERVO_MAX_SLEEP_TICKS 0xFF
 
+// 8 prescaler
+#define SERVO_US2TICKS(us) ((us)*(F_CPU/8000000))
+#define SERVO_T_TICKS SERVO_US2TICKS(20000)
+
+
+void servo_platform_init();
+
+void servo_platform_attach(uint8_t pin);
+
+static void servo_tick();
 
 static void servo_set_pins(uint16_t status, uint16_t mask)
 {

@@ -5,41 +5,56 @@
 
 #define MAX_MICROSECONDS 2250
 #define MIN_MICROSECONDS 500
-#define SETP_MICROSECONDS 16
+#define SETP_MICROSECONDS 20
 
 void setup()
 {
     io_uart_init(0, 9600);
     io_logging_init();
     servo_init();
-
-    servo_attach(2);
-    servo_attach(3);
-    //servo_attach(4);
-
-
 }
 
-uint16_t microseconds;
-int16_t dir;
+void init()
+{
+    servo_attach(4);
+    servo_attach(5);
+}
+
+uint16_t microseconds1 = 0;
+uint16_t microseconds2 = ~0;
+int16_t dir1;
+int16_t dir2;
 
 void loop()
 {
-    microseconds += dir*SETP_MICROSECONDS;
+    microseconds1 += dir1*SETP_MICROSECONDS;
 
-    if (microseconds < MIN_MICROSECONDS) {
-        microseconds = MIN_MICROSECONDS;
-        dir = 1;
+    if (microseconds1 < MIN_MICROSECONDS) {
+        microseconds1 = MIN_MICROSECONDS;
+        dir1 = 1;
     }
-    else if (MAX_MICROSECONDS < microseconds) {
-        microseconds = MAX_MICROSECONDS;
-        dir = -1;
+    else if (MAX_MICROSECONDS < microseconds1) {
+        microseconds1 = MAX_MICROSECONDS;
+        dir1 = -1;
     }
 
-    LOG_INFO(SERVO, "microseconds %d", microseconds);
-    servo_set_mircoseconds(2, microseconds);
+    microseconds2 += dir2*SETP_MICROSECONDS;
 
-    gmd_delay(500);
+    if (microseconds2 < MIN_MICROSECONDS) {
+        microseconds2 = MIN_MICROSECONDS;
+        dir2 = 1;
+    }
+    else if (MAX_MICROSECONDS < microseconds2) {
+        microseconds2 = MAX_MICROSECONDS;
+        dir2 = -1;
+    }
+
+
+    LOG_INFO(SERVO, "microseconds1 %d microseconds2: %d", microseconds1, microseconds2);
+    servo_set_mircoseconds(4, microseconds1);
+    servo_set_mircoseconds(5, microseconds2);
+
+    gmd_delay(10);
 }
 
 

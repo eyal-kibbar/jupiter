@@ -1,111 +1,119 @@
-
-#include "ganymede.h"
-#include "utils.h"
-#include "logging.h"
 #include "servo.h"
+#include "utils.h"
+#include "io_platform.h"
 #include "servo_platform.h"
-#include "servo_platform_api.h"
-#include <stdlib.h>
+#include "logging.h"
 
 
-typedef struct servo_pin_s {
-    uint8_t pin_idx;
-    uint16_t duty;
-} servo_pin_t;
+struct servo_pin_s {
+    uint8_t pin;
+    uint16_t ticks;
+};
 
-typedef struct servo_s {
-    servo_pin_t pin[SERVO_MAX_PIN];
-    uint8_t num_attached;
+
+struct servo_t {
+    struct servo_pin_s pins[SERVO_MAX_PIN];
+    uint8_t num_pins;
     uint8_t curr;
 
-    uint16_t tick;
-    uint16_t attached;
+    uint16_t curr_ticks;
     uint16_t mask;
-} servo_t;
+    uint16_t attached;
+};
 
-
-static servo_t servo;
-
-
-COMPILER_CHECK(SERVO_MAX_PIN <= (8*sizeof(servo.mask))); // need to add more bits to mask
+static struct servo_t servo;
 
 void servo_init(void)
 {
-    servo.tick = SERVO_50HZ_RESOLUTION;
     servo_platform_init();
 }
 
 void servo_attach(uint8_t pin)
 {
-    uint8_t n = servo.num_attached;
+    platform_cli();
+    servo.pins[servo.num_pins++].pin = pin;
     servo_platform_attach(pin);
-
-    servo.pin[n].pin_idx = pin;
-    servo.pin[n].duty = SERVO_50HZ_RESOLUTION;
-    servo.attached |= (1 << pin);
-    ++servo.num_attached;
-}
-
-static int servo_cmp(const void* a, const void* b)
-{
-    const servo_pin_t* pa = (const servo_pin_t*)a;
-    const servo_pin_t* pb = (const servo_pin_t*)b;
-
-    return (int)pa->duty - (int)pb->duty;
-}
-
-void servo_set_mircoseconds(uint8_t pin, uint16_t microseconds)
-{
-    servo_set(pin, microseconds / SERVO_50HZ_TICK_US);
+    servo.attached |= 1 << pin;
+    platform_sei();
 }
 
 void servo_set(uint8_t pin, uint16_t duty)
 {
-    uint8_t i;
 
-    LOG_INFO(SERVO, "setting pin %u duty %u", pin, duty);
+}
+void servo_set_mircoseconds(uint8_t pin, uint16_t microseconds)
+{
+    int i;
+    uint16_t ticks = SERVO_US2TICKS(microseconds);
 
-    duty = SERVO_50HZ_RESOLUTION - duty;
+    //LOG_INFO(SERVO, "ticks: %u", ticks);
 
-
-    for (i=0; i < servo.num_attached; ++i ) {
-        if (servo.pin[i].pin_idx != pin) {
-            continue;
-        }
-
-        servo_platform_cli();
-        servo.pin[i].duty = duty;
-        qsort(servo.pin, servo.num_attached, sizeof(servo_pin_t), servo_cmp);
-        servo_platform_sei();
-        return;
+    for (i=0; i < servo.num_pins; ++i) {
+        //LOG_INFO(SERVO, "pin %d: %d", i, servo.pins[i].pin);
     }
+
+    platform_cli();
+    // find pin
+    for (i=0; pin != servo.pins[i].pin; ++i);
+    // bubble left
+    while (i > 0 && servo.pins[i-1].ticks > ticks) {
+        servo.pins[i] = servo.pins[i-1];
+        --i;
+    }
+
+    //LOG_INFO(SERVO, "B: %d", i);
+
+    // bubble right
+    while (i < (servo.num_pins-1) && servo.pins[i+1].ticks < ticks) {
+        servo.pins[i] = servo.pins[i+1];
+        ++i;
+    }
+
+    servo.pins[i].pin = pin;
+    servo.pins[i].ticks = ticks;
+    platform_sei();
+
+    //LOG_INFO(SERVO, "setting pin idx %d (%d)", i, pin);
 }
 
 static void servo_tick()
 {
-    uint8_t need_change = 0;
-    const servo_pin_t* c;
+    uint8_t sleep_ticks;
+    uint8_t used_ticks;
+    // set countdown clock to SERVO_MAX_SLEEP_TICKS
+    OCR0A = SERVO_MAX_SLEEP_TICKS; // avoid nested interrupt
+    do {
+        if (servo.curr == servo.num_pins) {
+            // sleep till the end of the cycle
+            sleep_ticks = MIN(SERVO_MAX_SLEEP_TICKS, SERVO_T_TICKS - servo.curr_ticks);
+            if (0 == sleep_ticks) {
+                // start a new cycle
+                servo.curr = 0;
+                servo.curr_ticks = 0;
+                servo.mask = 0;
+                servo_set_pins(0xFFFF, servo.attached);
+            }
+        }
+        else {
+            sleep_ticks = MIN(SERVO_MAX_SLEEP_TICKS, servo.pins[servo.curr].ticks - servo.curr_ticks);
+            if (0 == sleep_ticks) {
+                servo.mask |= 1 << servo.pins[servo.curr++].pin;
+                servo_set_pins(~servo.mask, servo.attached);
+            }
+        }
 
 
-    if (servo.tick == SERVO_50HZ_RESOLUTION) {
-        servo.curr = 0;
-        servo.mask = 0;
-        servo.tick = 0;
-        need_change = 1;
-    }
-
-    ++servo.tick;
-
-    for (c = &servo.pin[servo.curr];
-         servo.curr < servo.num_attached && c->duty < servo.tick;
-         c = &servo.pin[++servo.curr]) {
-
-        servo.mask |= 1 << c->pin_idx;
-        need_change = 1;
-    }
-
-    if (need_change) {
-        // enable the pins
-        servo_set_pins(servo.mask, servo.attached);
-    }
+        servo.curr_ticks += sleep_ticks;
+        used_ticks = TCNT0;
+        // count the number of ticks already
+        if (used_ticks < sleep_ticks) {
+            OCR0A = sleep_ticks;
+            return;
+        }
+        else {
+            // counter has already passed the number of ticks we need to sleep
+            // restart timer
+            TCNT0 = 0;
+        }
+    } while (1);
 }

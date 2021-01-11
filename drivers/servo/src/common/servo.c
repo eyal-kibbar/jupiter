@@ -48,20 +48,17 @@ void servo_set_mircoseconds(uint8_t pin, uint16_t microseconds)
 
     //LOG_INFO(SERVO, "ticks: %u", ticks);
 
-    for (i=0; i < servo.num_pins; ++i) {
-        //LOG_INFO(SERVO, "pin %d: %d", i, servo.pins[i].pin);
-    }
+    for (i=0; i < servo.num_pins; ++i);
 
     platform_cli();
     // find pin
     for (i=0; pin != servo.pins[i].pin; ++i);
+    
     // bubble left
     while (i > 0 && servo.pins[i-1].ticks > ticks) {
         servo.pins[i] = servo.pins[i-1];
         --i;
     }
-
-    //LOG_INFO(SERVO, "B: %d", i);
 
     // bubble right
     while (i < (servo.num_pins-1) && servo.pins[i+1].ticks < ticks) {
@@ -72,16 +69,14 @@ void servo_set_mircoseconds(uint8_t pin, uint16_t microseconds)
     servo.pins[i].pin = pin;
     servo.pins[i].ticks = ticks;
     platform_sei();
-
-    //LOG_INFO(SERVO, "setting pin idx %d (%d)", i, pin);
 }
 
 static void servo_tick()
 {
     uint8_t sleep_ticks;
     uint8_t used_ticks;
-    // set countdown clock to SERVO_MAX_SLEEP_TICKS
-    OCR0A = SERVO_MAX_SLEEP_TICKS; // avoid nested interrupt
+    // set countup clock to SERVO_MAX_SLEEP_TICKS
+    SERVO_CLK_SET_LIMIT(SERVO_MAX_SLEEP_TICKS); // avoid nested interrupt
     do {
         if (servo.curr == servo.num_pins) {
             // sleep till the end of the cycle
@@ -104,16 +99,16 @@ static void servo_tick()
 
 
         servo.curr_ticks += sleep_ticks;
-        used_ticks = TCNT0;
+        SERVO_CLK_GET(&used_ticks);
         // count the number of ticks already
         if (used_ticks < sleep_ticks) {
-            OCR0A = sleep_ticks;
+            SERVO_CLK_SET_LIMIT(sleep_ticks);
             return;
         }
         else {
             // counter has already passed the number of ticks we need to sleep
             // restart timer
-            TCNT0 = 0;
+            SERVO_CLK_CLR();
         }
     } while (1);
 }

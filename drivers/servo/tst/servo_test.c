@@ -54,7 +54,7 @@ void loop()
     servo_set_mircoseconds(4, microseconds1);
     servo_set_mircoseconds(5, microseconds2);
 
-    gmd_delay(10);
+    //gmd_delay(10);
 }
 
 

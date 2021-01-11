@@ -11,6 +11,11 @@
 #define SERVO_T_TICKS SERVO_US2TICKS(20000)
 
 
+
+#define SERVO_CLK_SET_LIMIT(limit) do { OCR0A = (limit); } while(0)
+#define SERVO_CLK_GET(a) do { *(a) = TCNT0; } while (0)
+#define SERVO_CLK_CLR() do { TCNT0 = 0; } while (0)
+
 void servo_platform_init();
 
 void servo_platform_attach(uint8_t pin);
@@ -41,7 +46,6 @@ static void servo_set_pins(uint16_t status, uint16_t mask)
         PORTD = (PORTD & (~port_mask.portd)) | (port.portd & port_mask.portd);
     }
 }
-
 
 ISR(TIMER0_COMPA_vect)
 {

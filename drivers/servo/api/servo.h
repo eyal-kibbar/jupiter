@@ -4,17 +4,6 @@
 #include <stdint.h>
 
 
-#define SERVO_50HZ_COMPARE     64
-#define SERVO_50HZ_RESOLUTION  625
-#define SERVO_50HZ_SCALER      8
-
-// microseconds per 1 resolution value
-#define SERVO_50HZ_TICK_US ((SERVO_50HZ_SCALER * SERVO_50HZ_COMPARE) / (F_CPU / 1000000))
-
-#if (SERVO_50HZ_TICK_US * SERVO_50HZ_RESOLUTION) != 20000
-  #error "cycle is not 50 Hz"
-#endif
-
 void servo_init(void);
 
 void servo_attach(uint8_t pin);

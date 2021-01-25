@@ -3,23 +3,23 @@
 #include "servo.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include "io_platform.h"
+#include "logging.h"
 
+#define SERVO_CLK_PRESCALER 8
+#define SERVO_CYCLE_FREQ 50
 
 void servo_platform_init()
 {
-    // initialize 50Hz:
-    OCR0A  = SERVO_50HZ_COMPARE-1; // set compare A value
-    TCCR0A =  _BV(WGM01); // set CTC mode
-    TIMSK0 = _BV(OCIE0A); // enable compare match A interrupt
-    TCCR0B = _BV(CS01);   // set clock with 8 prescalar
+    OCR1A  = ((F_CPU / SERVO_CLK_PRESCALER) / SERVO_CYCLE_FREQ) - 1;
+    TCCR1B = _BV(WGM12) | _BV(CS11); // set CTC OCR1A mode, 8 prescaler
+    OCR1B  = 0xFFFF; // avoid having an update interrupt
+    TIMSK1 = _BV(OCIE1B) | _BV(OCIE1A);
+
+    //LOG_INFO(SERVO, "OCR1A: %u", OCR1A);
 }
 
 void servo_platform_attach(uint8_t pin)
 {
-    if (pin < 8) {
-        DDRD |= _BV(pin);
-    }
-    else {
-        DDRB |= _BV(pin - 8);
-    }
+    io_pin_output(pin);
 }

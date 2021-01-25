@@ -16,6 +16,7 @@ LOCAL_DEFINES     := \
 
 LOCAL_STATIC_LIBS := \
 	ganymede-dbg \
+	io-dbg \
 	logging
 
 LOCAL_CFLAGS := -Og
@@ -49,6 +50,7 @@ LOCAL_SRC         := $(LOCAL_PATH)/tst/servo_test.c
 LOCAL_STATIC_LIBS := \
 	servo-dbg \
 	ganymede-dbg \
+	io-dbg \
 	logging
 
 LOCAL_TARGET := atmega168
@@ -64,8 +66,9 @@ include $(CLEAR_VARS)
 LOCAL_MODULE      := jupiter-servo-tst
 
 LOCAL_STATIC_LIBS := \
-	servo \
+	servo-dbg \
 	ganymede-dbg \
+	io-dbg \
 	logging \
 	uart-dbg \
 

@@ -1,111 +1,136 @@
-
-#include "ganymede.h"
-#include "utils.h"
-#include "logging.h"
 #include "servo.h"
+#include "utils.h"
+#include "io_platform.h"
 #include "servo_platform.h"
-#include "servo_platform_api.h"
-#include <stdlib.h>
+#include "logging.h"
 
 
-typedef struct servo_pin_s {
-    uint8_t pin_idx;
-    uint16_t duty;
-} servo_pin_t;
+struct servo_pin_s {
+    uint8_t  pin;
+    uint16_t microseconds;
+};
 
-typedef struct servo_s {
-    servo_pin_t pin[SERVO_MAX_PIN];
-    uint8_t num_attached;
-    uint8_t curr;
-
-    uint16_t tick;
-    uint16_t attached;
+struct servo_update_s {
     uint16_t mask;
-} servo_t;
+    uint16_t tick;
+};
+
+struct servo_t {
+    struct servo_pin_s pins[SERVO_MAX_PIN];
+    struct servo_update_s updates[SERVO_MAX_PIN];
+
+    uint8_t curr;
+    uint8_t num_pins;
+    uint8_t update_needed;
+    uint16_t attached;
+};
 
 
-static servo_t servo;
-
-
-COMPILER_CHECK(SERVO_MAX_PIN <= (8*sizeof(servo.mask))); // need to add more bits to mask
+volatile static struct servo_t servo;
 
 void servo_init(void)
 {
-    servo.tick = SERVO_50HZ_RESOLUTION;
     servo_platform_init();
 }
 
+// CTC mode, 2 types of interrupts:
+// 1. OCR1A - cycle has finished, start a new 20ms cycle
+// 2. OCR1B - need to perform a change
+
 void servo_attach(uint8_t pin)
 {
-    uint8_t n = servo.num_attached;
+    platform_cli();
+    servo.pins[servo.num_pins].pin = pin;
+    servo.pins[servo.num_pins].microseconds = 20000;
+    ++servo.num_pins;
+    servo.update_needed = 1;
     servo_platform_attach(pin);
-
-    servo.pin[n].pin_idx = pin;
-    servo.pin[n].duty = SERVO_50HZ_RESOLUTION;
-    servo.attached |= (1 << pin);
-    ++servo.num_attached;
+    servo.attached |= 1 << pin;
+    platform_sei();
 }
 
-static int servo_cmp(const void* a, const void* b)
-{
-    const servo_pin_t* pa = (const servo_pin_t*)a;
-    const servo_pin_t* pb = (const servo_pin_t*)b;
-
-    return (int)pa->duty - (int)pb->duty;
-}
 
 void servo_set_mircoseconds(uint8_t pin, uint16_t microseconds)
 {
-    servo_set(pin, microseconds / SERVO_50HZ_TICK_US);
+    int i, j;
+    uint16_t m = 20000 - microseconds;;
+
+    platform_cli();
+    for (i=0; i < servo.num_pins && servo.pins[i].pin != pin; ++i);
+
+    if (m == servo.pins[i].microseconds) {
+        // no need to update
+        platform_sei();
+        return;
+    }
+
+    servo.pins[i].microseconds = m;
+    servo.update_needed = 1;
+
+    // sort
+    for (i=0; i < servo.num_pins-1; ++i) {
+        for (j=i+1; j < servo.num_pins; ++j) {
+            if (servo.pins[i].microseconds > servo.pins[j].microseconds) {
+                struct servo_pin_s temp_pin = servo.pins[i];
+                servo.pins[i] = servo.pins[j];
+                servo.pins[j] = temp_pin;
+            }
+        }
+    }
+
+    platform_sei();
+
+    //LOG_INFO(SERVO, "setting pin %d (%d): %u", pin, i, microseconds);
 }
+
+static void servo_new_cycle()
+{
+    int i, j;
+
+    // clear all the attached
+    servo_set_pins(0, servo.attached);
+    servo.curr = 0;
+    //toggle = 0;
+
+    if (0 == servo.update_needed) {
+        return;
+    }
+
+    servo.updates[0].mask = 1 << servo.pins[0].pin;
+    servo.updates[0].tick = servo.pins[0].microseconds * 2; // 2 ticks per microsecond
+
+    for (i=1, j=0; i < servo.num_pins; ++i) {
+        uint16_t tick = servo.pins[i].microseconds * 2; // 2 ticks per microsecond
+
+        if ((tick - servo.updates[j].tick) < 10) {
+            // in this case, the next update is too close, update them together
+            tick = servo.updates[j].tick;
+        }
+        else {
+            // next tick is far enough, update it separately
+            ++j;
+            servo.updates[j].mask = servo.updates[j-1].mask;
+        }
+        servo.updates[j].mask |= 1 << servo.pins[i].pin;
+        servo.updates[j].tick = tick;
+    }
+    //servo.num_updates = j;
+    servo.updates[j+1].tick = 0xFFFF; // set last pin timer to be beyond the OCR1A
+
+    // kickstart toggle by setting the first OCR1B
+    SERVO_CLK_NEXT_TOGGLE(servo.updates[0].tick);
+}
+
+static void servo_toggle()
+{
+    servo_set_pins(servo.updates[servo.curr].mask, servo.attached);
+    SERVO_CLK_NEXT_TOGGLE(servo.updates[++servo.curr].tick);
+}
+
+
+
 
 void servo_set(uint8_t pin, uint16_t duty)
 {
-    uint8_t i;
 
-    LOG_INFO(SERVO, "setting pin %u duty %u", pin, duty);
-
-    duty = SERVO_50HZ_RESOLUTION - duty;
-
-
-    for (i=0; i < servo.num_attached; ++i ) {
-        if (servo.pin[i].pin_idx != pin) {
-            continue;
-        }
-
-        servo_platform_cli();
-        servo.pin[i].duty = duty;
-        qsort(servo.pin, servo.num_attached, sizeof(servo_pin_t), servo_cmp);
-        servo_platform_sei();
-        return;
-    }
-}
-
-static void servo_tick()
-{
-    uint8_t need_change = 0;
-    const servo_pin_t* c;
-
-
-    if (servo.tick == SERVO_50HZ_RESOLUTION) {
-        servo.curr = 0;
-        servo.mask = 0;
-        servo.tick = 0;
-        need_change = 1;
-    }
-
-    ++servo.tick;
-
-    for (c = &servo.pin[servo.curr];
-         servo.curr < servo.num_attached && c->duty < servo.tick;
-         c = &servo.pin[++servo.curr]) {
-
-        servo.mask |= 1 << c->pin_idx;
-        need_change = 1;
-    }
-
-    if (need_change) {
-        // enable the pins
-        servo_set_pins(servo.mask, servo.attached);
-    }
 }

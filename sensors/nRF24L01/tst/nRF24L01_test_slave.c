@@ -3,7 +3,7 @@
 #include "logging.h"
 #include "io.h"
 
-#define SS_PIN 10
+#define SS_PIN 2
 
 
 int sent_idx = 100;
@@ -21,15 +21,15 @@ void init()
 {
     nrf_cfg_t cfg = {
         .csn_pin = SS_PIN,
-        .ce_pin = 9,
-        .irq_pin = 8,
+        .ce_pin = 3,
+        .irq_pin = 0xFF, //8,
         .channel = 76
     };
     nrf_init(&cfg);
 
     nrf_recv_open_pipe(1, "abcde", 5);
     nrf_recv_set();
-    //nrf_test();
+    nrf_test();
     LOG_INFO(NTF_SLV, "waiting");
 }
 

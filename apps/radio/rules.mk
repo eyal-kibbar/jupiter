@@ -20,13 +20,13 @@ LOCAL_INC := \
 LOCAL_EXPORT := $(LOCAL_PATH)/api
 
 LOCAL_STATIC_LIBS := \
-	nRF24L01-dbg \
-	uart-dbg \
-	spi-dbg \
-	io-dbg \
-	io-analog-dbg \
+	nRF24L01 \
+	uart \
+	spi \
+	io \
+	io-analog \
 	logging \
-	ganymede-dbg
+	ganymede
 
 LOCAL_TARGET := atmega168
 include $(BUILD_GMD_TASK)
@@ -94,12 +94,13 @@ LOCAL_INC := \
 LOCAL_EXPORT := $(LOCAL_PATH)/api
 
 LOCAL_STATIC_LIBS := \
-	nRF24L01-dbg \
-	uart-dbg \
-	spi-dbg \
+	nRF24L01 \
+	uart \
+	spi \
+	io \
 	servo-dbg \
 	logging \
-	ganymede-dbg
+	ganymede
 
 LOCAL_TARGET := atmega168
 include $(BUILD_GMD_TASK)
@@ -115,7 +116,7 @@ LOCAL_MODULE := radio-rx
 
 LOCAL_DEFINES := \
 	STACK_SIZE=256 \
-	LOG_LEVEL=3 \
+	LOG_LEVEL=0 \
 	RELEASE
 
 LOCAL_EXPORT := $(LOCAL_PATH)/api
@@ -255,13 +256,13 @@ LOCAL_DEFINES := \
 	LOG_LEVEL=3
 
 LOCAL_STATIC_LIBS := \
-	nRF24L01-dbg \
-	uart-dbg \
-	spi-dbg \
-	io-dbg \
+	nRF24L01 \
+	uart \
+	spi \
+	io \
 	servo-dbg \
 	logging \
-	ganymede-dbg
+	ganymede
 
 LOCAL_TASKS := \
 	radio-rx-dbg

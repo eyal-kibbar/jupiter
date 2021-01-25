@@ -4,9 +4,15 @@
 #include <avr/interrupt.h>
 #include "servo_platform_api.h"
 
-#define servo_platform_cli() cli()
-#define servo_platform_sei() sei()
 
+#define SERVO_CLK_NEXT_TOGGLE(ticks) do { OCR1B = (ticks); } while(0)
+
+void servo_platform_init();
+
+void servo_platform_attach(uint8_t pin);
+
+static void servo_toggle();
+static void servo_new_cycle();
 
 static void servo_set_pins(uint16_t status, uint16_t mask)
 {
@@ -33,11 +39,16 @@ static void servo_set_pins(uint16_t status, uint16_t mask)
     }
 }
 
-
-ISR(TIMER0_COMPA_vect)
+ISR(TIMER1_COMPA_vect)
 {
-    servo_tick();
+    servo_new_cycle();
 }
+
+ISR(TIMER1_COMPB_vect)
+{
+    servo_toggle();
+}
+
 
 
 #endif /* SERVO_PLATFORM_H_ */

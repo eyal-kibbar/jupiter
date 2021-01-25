@@ -3,7 +3,7 @@
 #include "logging.h"
 #include "io.h"
 
-#define SS_PIN 10
+#define SS_PIN 6
 
 void setup()
 {
@@ -19,7 +19,7 @@ void init()
 {
     nrf_cfg_t cfg = {
         .csn_pin = SS_PIN,
-        .ce_pin = 9,
+        .ce_pin = 2,
         .irq_pin = 0xFF,//8,
         .channel = 76
     };
@@ -29,7 +29,7 @@ void init()
     //nrf_powerup();
     nrf_send_set();
 
-    //nrf_test();
+    nrf_test();
 }
 
 void loop()

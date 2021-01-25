@@ -8,11 +8,12 @@
 #include <math.h>
 
 #define SS_PIN 6
+#define LED_PIN 9
 
 radio_pkt_t pkts;
 
 static const uint8_t switches_map[] = {7, 4};
-static const uint8_t buttons_map[] = {2, 3, 8, 9};
+static const uint8_t buttons_map[] = {2, 3, 8};
 
 void setup()
 {
@@ -34,6 +35,8 @@ void setup()
         io_pin_set(buttons_map[i]); // pullup resister
     }
 
+    io_pin_output(LED_PIN);
+    io_pin_clr(LED_PIN);
 
     io_analog_init();
 }
@@ -47,7 +50,9 @@ void init()
         .irq_pin = 0xFF, // no IRQ
         .channel = 76
     };
+
     nrf_init(&cfg);
+
 
     nrf_send_open_pipe("abcde", 5);
     nrf_send_set();
@@ -57,6 +62,7 @@ void init()
 void loop()
 {
     uint8_t i;
+    int rc;
     radio_pkt_t *pkt = &pkts;
     uint32_t std;
 
@@ -81,8 +87,16 @@ void loop()
     }
 
 
-    nrf_send((uint8_t*)pkt, sizeof(*pkt));
+    if ((rc = nrf_send((uint8_t*)pkt, sizeof(*pkt)))) {
+        io_pin_clr(LED_PIN);
+    }
+    else {
+        io_pin_set(LED_PIN);
+    }
+
     LOG_INFO(RADIO_TX, "sending switches: %02x left x: %d left y: %d ", pkt->switches, pkt->j_left_x, pkt->j_left_y);
+
+
 }
 
 

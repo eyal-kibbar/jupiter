@@ -68,15 +68,15 @@ void loop()
 
         */
     LOG_INFO(RADIO_RX, "%04d(%4d) x %04d(%4d)   %04d(%4d) x %04d(%4d)",
-        map(pkt.j_right_x, 0, 1024, 500, 2250), pkt.j_right_x,
-        map(pkt.j_right_y, 0, 1024, 500, 2250), pkt.j_right_y,
-        map(pkt.j_left_x, 0, 1024, 500, 2250), pkt.j_left_x,
-        map(pkt.j_left_y, 0, 1024, 500, 2250), pkt.j_left_y);
+        map(pkt.j_right_x, 0, 1024, 500, 2000), pkt.j_right_x,
+        map(pkt.j_right_y, 0, 1024, 500, 2000), pkt.j_right_y,
+        map(pkt.j_left_x, 0, 1024, 500, 2000), pkt.j_left_x,
+        map(pkt.j_left_y, 0, 1024, 500, 2000), pkt.j_left_y);
 
-    servo_set_mircoseconds(4, map(pkt.j_right_x, 0, 1024, 500, 2250));
-    servo_set_mircoseconds(5, map(pkt.j_right_y, 0, 1024, 500, 2250));
-    servo_set_mircoseconds(6, map(pkt.j_left_x, 0, 1024, 500, 2250));
-    servo_set_mircoseconds(7, map(pkt.j_left_y, 0, 1024, 500, 2250));
+    servo_set_mircoseconds(4, map(pkt.j_right_x, 0, 1024, 500, 2000));
+    servo_set_mircoseconds(5, map(pkt.j_right_y, 0, 1024, 500, 2000));
+    servo_set_mircoseconds(6, map(pkt.j_left_x, 0, 1024, 500, 2000));
+    servo_set_mircoseconds(7, map(pkt.j_left_y, 0, 1024, 500, 2000));
 
 }
 

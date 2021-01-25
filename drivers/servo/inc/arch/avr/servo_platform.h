@@ -4,23 +4,15 @@
 #include <avr/interrupt.h>
 #include "servo_platform_api.h"
 
-#define SERVO_MAX_SLEEP_TICKS 0xFF
 
-// 8 prescaler
-#define SERVO_US2TICKS(us) ((us)*(F_CPU/8000000))
-#define SERVO_T_TICKS SERVO_US2TICKS(20000)
-
-
-
-#define SERVO_CLK_SET_LIMIT(limit) do { OCR0A = (limit); } while(0)
-#define SERVO_CLK_GET(a) do { *(a) = TCNT0; } while (0)
-#define SERVO_CLK_CLR() do { TCNT0 = 0; } while (0)
+#define SERVO_CLK_NEXT_TOGGLE(ticks) do { OCR1B = (ticks); } while(0)
 
 void servo_platform_init();
 
 void servo_platform_attach(uint8_t pin);
 
-static void servo_tick();
+static void servo_toggle();
+static void servo_new_cycle();
 
 static void servo_set_pins(uint16_t status, uint16_t mask)
 {
@@ -47,10 +39,16 @@ static void servo_set_pins(uint16_t status, uint16_t mask)
     }
 }
 
-ISR(TIMER0_COMPA_vect)
+ISR(TIMER1_COMPA_vect)
 {
-    servo_tick();
+    servo_new_cycle();
 }
+
+ISR(TIMER1_COMPB_vect)
+{
+    servo_toggle();
+}
+
 
 
 #endif /* SERVO_PLATFORM_H_ */

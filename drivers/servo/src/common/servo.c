@@ -6,109 +6,115 @@
 
 
 struct servo_pin_s {
-    uint8_t pin;
+    uint8_t  pin;
+    uint16_t microseconds;
     uint16_t ticks;
 };
 
-
 struct servo_t {
     struct servo_pin_s pins[SERVO_MAX_PIN];
-    uint8_t num_pins;
     uint8_t curr;
-
-    uint16_t curr_ticks;
+    uint8_t num_pins;
     uint16_t mask;
     uint16_t attached;
 };
 
-static struct servo_t servo;
+
+volatile static struct servo_t servo;
 
 void servo_init(void)
 {
     servo_platform_init();
 }
 
+// CTC mode, 2 types of interrupts:
+// 1. OCR1A - cycle has finished, start a new 20ms cycle
+// 2. OCR1B - need to perform a change
+
 void servo_attach(uint8_t pin)
 {
     platform_cli();
-    servo.pins[servo.num_pins++].pin = pin;
+    servo.pins[servo.num_pins].pin = pin;
+    servo.pins[servo.num_pins].microseconds = 20000;
+    ++servo.num_pins;
     servo_platform_attach(pin);
     servo.attached |= 1 << pin;
     platform_sei();
 }
 
-void servo_set(uint8_t pin, uint16_t duty)
-{
 
-}
 void servo_set_mircoseconds(uint8_t pin, uint16_t microseconds)
 {
     int i;
-    uint16_t ticks = SERVO_US2TICKS(microseconds);
-
-    //LOG_INFO(SERVO, "ticks: %u", ticks);
-
-    for (i=0; i < servo.num_pins; ++i);
-
     platform_cli();
-    // find pin
-    for (i=0; pin != servo.pins[i].pin; ++i);
-    
-    // bubble left
-    while (i > 0 && servo.pins[i-1].ticks > ticks) {
-        servo.pins[i] = servo.pins[i-1];
-        --i;
-    }
+    for (i=0; i < servo.num_pins && servo.pins[i].pin != pin; ++i);
 
-    // bubble right
-    while (i < (servo.num_pins-1) && servo.pins[i+1].ticks < ticks) {
-        servo.pins[i] = servo.pins[i+1];
-        ++i;
-    }
-
-    servo.pins[i].pin = pin;
-    servo.pins[i].ticks = ticks;
+    servo.pins[i].microseconds = 20000 - microseconds;
     platform_sei();
+
+    //LOG_INFO(SERVO, "setting pin %d (%d): %u", pin, i, microseconds);
 }
 
-static void servo_tick()
+static int servo_pins_ticks_compare(const void* a, const void* b)
 {
-    uint8_t sleep_ticks;
-    uint8_t used_ticks;
-    // set countup clock to SERVO_MAX_SLEEP_TICKS
-    SERVO_CLK_SET_LIMIT(SERVO_MAX_SLEEP_TICKS); // avoid nested interrupt
+    const struct servo_pin_s* pa = (const struct servo_pin_s*)a;
+    const struct servo_pin_s* pb = (const struct servo_pin_s*)b;
+
+    if (pa->ticks > pb->ticks) return 1;
+    if (pa->ticks < pb->ticks) return -1;
+    return 0;
+}
+
+static void servo_new_cycle()
+{
+    int i, j;
+
+    // clear all the attached
+    servo_set_pins(0, servo.attached);
+    servo.mask = 0;
+    servo.curr = 0;
+    //toggle = 0;
+
+    for (i=0; i < servo.num_pins; ++i) {
+        servo.pins[i].ticks = servo.pins[i].microseconds * 2; // 2 ticks per microsecond
+    }
+    servo.pins[servo.num_pins].ticks = 0xFFFF; // set last pin timer to be beyond the OCR1A
+    // TODO: sort pins by ticks
+    for (i=0; i < servo.num_pins-1; ++i) {
+        for (j=i+1; j < servo.num_pins; ++j) {
+            if (servo.pins[i].ticks > servo.pins[j].ticks) {
+                struct servo_pin_s temp_pin = servo.pins[i];
+                servo.pins[i] = servo.pins[j];
+                servo.pins[j] = temp_pin;
+            }
+        }
+    }
+
+
+    (servo.pins, servo.num_pins, sizeof(*servo.pins), servo_pins_ticks_compare);
+
+    // kickstart toggle by setting the first OCR1B
+    SERVO_CLK_NEXT_TOGGLE(servo.pins[0].ticks);
+}
+
+static void servo_toggle()
+{
+    uint16_t prev_ticks, next_ticks;
+
     do {
-        if (servo.curr == servo.num_pins) {
-            // sleep till the end of the cycle
-            sleep_ticks = MIN(SERVO_MAX_SLEEP_TICKS, SERVO_T_TICKS - servo.curr_ticks);
-            if (0 == sleep_ticks) {
-                // start a new cycle
-                servo.curr = 0;
-                servo.curr_ticks = 0;
-                servo.mask = 0;
-                servo_set_pins(0xFFFF, servo.attached);
-            }
-        }
-        else {
-            sleep_ticks = MIN(SERVO_MAX_SLEEP_TICKS, servo.pins[servo.curr].ticks - servo.curr_ticks);
-            if (0 == sleep_ticks) {
-                servo.mask |= 1 << servo.pins[servo.curr++].pin;
-                servo_set_pins(~servo.mask, servo.attached);
-            }
-        }
+        prev_ticks = servo.pins[servo.curr].ticks;
+        servo.mask |= 1 << servo.pins[servo.curr].pin;
+        servo_set_pins(servo.mask, servo.attached);
+        next_ticks = servo.pins[++servo.curr].ticks;
+    } while ( (servo.curr < servo.num_pins) && (next_ticks - prev_ticks) < 50); // continue toggling next if we don't have enough time to set the interrupt
+
+    SERVO_CLK_NEXT_TOGGLE(next_ticks);
+}
 
 
-        servo.curr_ticks += sleep_ticks;
-        SERVO_CLK_GET(&used_ticks);
-        // count the number of ticks already
-        if (used_ticks < sleep_ticks) {
-            SERVO_CLK_SET_LIMIT(sleep_ticks);
-            return;
-        }
-        else {
-            // counter has already passed the number of ticks we need to sleep
-            // restart timer
-            SERVO_CLK_CLR();
-        }
-    } while (1);
+
+
+void servo_set(uint8_t pin, uint16_t duty)
+{
+
 }

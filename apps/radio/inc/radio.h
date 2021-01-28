@@ -4,8 +4,8 @@
 #include "utils.h"
 
 struct radio_pkt_s {
-    uint16_t pot0;
-    uint16_t pot1;
+    uint16_t pot_left;
+    uint16_t pot_right;
     uint16_t j_right_x;
     uint16_t j_right_y;
     uint16_t j_left_x;

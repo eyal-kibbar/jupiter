@@ -67,8 +67,8 @@ void loop()
     uint32_t std;
 
     // read all inputs
-    //io_analog_read(0, IO_ANALOG_REF_AVcc, &pkt->pot0);
-    //io_analog_read(1, IO_ANALOG_REF_AVcc, &pkt->pot1);
+    io_analog_read(7, IO_ANALOG_REF_AVcc, &pkt->pot_left);
+    io_analog_read(6, IO_ANALOG_REF_AVcc, &pkt->pot_right);
     io_analog_read(0, IO_ANALOG_REF_AVcc, &pkt->j_left_y);
     io_analog_read(1, IO_ANALOG_REF_AVcc, &pkt->j_left_x);
     io_analog_read(2, IO_ANALOG_REF_AVcc, &pkt->j_right_x);
@@ -94,7 +94,7 @@ void loop()
         io_pin_set(LED_PIN);
     }
 
-    LOG_INFO(RADIO_TX, "sending switches: %02x left x: %d left y: %d ", pkt->switches, pkt->j_left_x, pkt->j_left_y);
+    LOG_INFO(RADIO_TX, "sending switches: %02x left: %d right: %d ", pkt->switches, pkt->pot_left, pkt->pot_right);
 
 
 }

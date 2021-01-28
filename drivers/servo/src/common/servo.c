@@ -4,6 +4,7 @@
 #include "servo_platform.h"
 #include "logging.h"
 
+#define SERVO_MIN_ISR_US 20
 
 struct servo_pin_s {
     uint8_t  pin;
@@ -53,7 +54,7 @@ void servo_attach(uint8_t pin)
 void servo_set_mircoseconds(uint8_t pin, uint16_t microseconds)
 {
     int i, j;
-    uint16_t m = 20000 - microseconds;;
+    uint16_t m = 20000 - microseconds;
 
     platform_cli();
     for (i=0; i < servo.num_pins && servo.pins[i].pin != pin; ++i);
@@ -85,7 +86,7 @@ void servo_set_mircoseconds(uint8_t pin, uint16_t microseconds)
 
 static void servo_new_cycle()
 {
-    int i, j;
+    uint8_t i, j;
 
     // clear all the attached
     servo_set_pins(0, servo.attached);
@@ -93,6 +94,7 @@ static void servo_new_cycle()
     //toggle = 0;
 
     if (0 == servo.update_needed) {
+        SERVO_CLK_NEXT_TOGGLE(servo.updates[0].tick);
         return;
     }
 
@@ -102,7 +104,7 @@ static void servo_new_cycle()
     for (i=1, j=0; i < servo.num_pins; ++i) {
         uint16_t tick = servo.pins[i].microseconds * 2; // 2 ticks per microsecond
 
-        if ((tick - servo.updates[j].tick) < 10) {
+        if ((tick - servo.updates[j].tick) < SERVO_MIN_ISR_US) {
             // in this case, the next update is too close, update them together
             tick = servo.updates[j].tick;
         }
@@ -114,8 +116,9 @@ static void servo_new_cycle()
         servo.updates[j].mask |= 1 << servo.pins[i].pin;
         servo.updates[j].tick = tick;
     }
-    //servo.num_updates = j;
+
     servo.updates[j+1].tick = 0xFFFF; // set last pin timer to be beyond the OCR1A
+    servo.update_needed = 0; // mark updated
 
     // kickstart toggle by setting the first OCR1B
     SERVO_CLK_NEXT_TOGGLE(servo.updates[0].tick);

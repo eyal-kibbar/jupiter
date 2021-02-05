@@ -43,7 +43,7 @@ upload_$(LOCAL_TARGET)_$(LOCAL_MODULE): $(_DIR_OUT)/$(LOCAL_MODULE).hex
 	avrdude -F -V -c arduino -p ATMEGA328P -P $(AVRDUDE_PORT) -b $(AVRDUDE_BAUD) -U flash:w:$<
 
 upload_prog_$(LOCAL_TARGET)_$(LOCAL_MODULE): $(_DIR_OUT)/$(LOCAL_MODULE).hex
-	avrdude -v -c stk500v1 -p ATMEGA328P -P $(AVRDUDE_PORT) -b 19200 -U flash:w:$<:i
+	avrdude -v -c stk500v1 -p ATMEGA328P -P $(AVRDUDE_PORT) -b $(AVRDUDE_BAUD) -U flash:w:$<:i
 endif
 
 ifeq ($(LOCAL_TARGET), atmega2560)

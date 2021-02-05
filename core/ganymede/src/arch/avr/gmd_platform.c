@@ -156,6 +156,9 @@ void gmd_wdg_reset()
 void gmd_platform_init()
 {
     wdr();
+#ifdef GMD_WATCHDOG_ENABLED
+    wdt_enable(WDTO_1S);
+#endif
     //WDTCSR = _BV(WDE) | _BV(WDP3);
 
     gmd_platform_timer_init();

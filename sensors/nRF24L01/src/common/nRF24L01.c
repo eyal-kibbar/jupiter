@@ -138,7 +138,7 @@ static void nrf_wfe()
         gmd_wfe(nrf.irq_port, nrf.irq_mask, nrf.irq_mask, 0);
     }
     else {
-        gmd_delay(100);
+        gmd_delay(10);
     }
 }
 
@@ -474,7 +474,7 @@ int nrf_recv(uint8_t* payload, uint8_t* max_payload_len, uint8_t* pipe_idx)
         nrf_wfe();
     } while (1);
 
-    LOG_INFO(NRF, "rx status: %02x fifo: %02x", status, fifo_status);
+    //LOG_INFO(NRF, "rx status: %02x fifo: %02x", status, fifo_status);
     // read payload
     io_spi_tx_begin(nrf.csn_pin);
     io_spi_master_sg(tx, ARR_SIZE(tx), 0);
@@ -488,7 +488,7 @@ int nrf_recv(uint8_t* payload, uint8_t* max_payload_len, uint8_t* pipe_idx)
 
 
     status = nrf_reg_read(NRF_FIFO_STATUS_ADDR, &fifo_status);
-    LOG_INFO(NRF, "rx status after read: %02x fifo: %02x", status, fifo_status);
+    //LOG_INFO(NRF, "rx status after read: %02x fifo: %02x", status, fifo_status);
 
     return 0;
 }

@@ -70,6 +70,7 @@ LOCAL_MODULE      := jupiter-hexpod-dbg
 
 LOCAL_STATIC_LIBS := \
 	servo-dbg \
+	io \
 	srv-dbg \
 	ganymede-dbg \
 	logging

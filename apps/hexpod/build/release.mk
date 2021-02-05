@@ -71,6 +71,7 @@ LOCAL_MODULE      := jupiter-hexpod
 LOCAL_STATIC_LIBS := \
 	servo \
 	srv \
+	io \
 	ganymede \
 
 LOCAL_TASKS       := \

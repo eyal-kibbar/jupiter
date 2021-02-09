@@ -11,6 +11,8 @@ OBJS := $(LOCAL_SRC)
 OBJS := $(patsubst $(ROOT_PATH)/%.c, %.c, $(OBJS))
 OBJS := $(patsubst %.c, $(DIR_OBJS)/%.o, $(OBJS))
 
+# adding the api folders
+$(LOCAL_TARGET)_$(LOCAL_MODULE)_EXPORT := $(LOCAL_EXPORT)
 API := $(foreach module, $(LOCAL_STATIC_LIBS), $(value $(LOCAL_TARGET)_$(module)_EXPORT) )
 USED_LIBS := $(patsubst %, $(_DIR_OUT)/lib%.a, $(LOCAL_STATIC_LIBS))
 

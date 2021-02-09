@@ -14,6 +14,7 @@ include $(ROOT_PATH)/drivers/swuart/rules.mk
 # libs
 include $(ROOT_PATH)/libs/clk/rules.mk
 include $(ROOT_PATH)/libs/srv/rules.mk
+include $(ROOT_PATH)/libs/failsafe/rules.mk
 
 # sensors
 include $(ROOT_PATH)/sensors/barometer/rules.mk

@@ -137,7 +137,9 @@ LOCAL_DEFINES := \
 
 LOCAL_STATIC_LIBS := \
 	failsafe-dbg \
-	ganymede-dbg
+	ganymede-dbg \
+	uart-dbg \
+	logging
 
 LOCAL_SRC := $(LOCAL_PATH)/tst/failsafe_test.c
 
@@ -149,3 +151,33 @@ include $(BUILD_GMD_TASK)
 
 LOCAL_TARGET := atmega2560
 include $(BUILD_GMD_TASK)
+
+
+# ========================================
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := jupiter-failsafe-tst
+
+LOCAL_DEFINES := \
+	STACK_SIZE=256 \
+	LOG_LEVEL=3
+
+LOCAL_STATIC_LIBS := \
+	failsafe-dbg \
+	ganymede-dbg \
+	uart-dbg \
+	logging
+
+
+LOCAL_TASKS := \
+	failsafe-tst \
+	failsafe-tsk \
+
+LOCAL_TARGET := atmega168
+include $(BUILD_EXEC)
+
+LOCAL_TARGET := atmega328p
+include $(BUILD_EXEC)
+
+LOCAL_TARGET := atmega2560
+include $(BUILD_EXEC)

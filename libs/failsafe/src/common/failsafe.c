@@ -20,16 +20,11 @@ void failsafe_reset()
     failsafe.countdown_sec = failsafe.reset_sec;
 }
 
-void loop()
+void failsafe_dec(uint8_t sec)
 {
-    if (0 == failsafe.countdown_sec) {
+    if (failsafe.countdown_sec <= sec) {
         gmd_panic();
     }
 
-    --failsafe.countdown_sec;
-    gmd_delay(1000);
+    failsafe.countdown_sec -= sec;
 }
-
-
-
-TASK(STACK_SIZE);

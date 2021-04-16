@@ -5,6 +5,11 @@
 
 #define MPU_ADDR 0x68
 
+#define MPU_CONFIG_ADDR              0x1A
+#define MPU_CONFIG_EXT_SYNC_SET_BMSK 0x38
+#define MPU_CONFIG_EXT_SYNC_SET_SHFT 0x02
+#define MPU_CONFIG_DLPF_CFG_BMSK     0x07
+#define MPU_CONFIG_DLPF_CFG_SHFT     0x00
 
 #define MPU_GYRO_CONFIG_ADDR         0x1B
 #define MPU_GYRO_CONFIG_FS_SEL_BMSK  0x18
@@ -48,25 +53,6 @@
 
 #define MPU_WHO_AM_I_ADDR 0x75
 
+#define MPU_WHO_AM_I_POR 0x71
+
 #endif /* MPU_REGS_H_ */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

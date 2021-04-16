@@ -24,6 +24,29 @@ include $(BUILD_STATIC_LIB)
 LOCAL_TARGET := atmega328p
 include $(BUILD_STATIC_LIB)
 
+# ========================================
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := mpu
+
+LOCAL_DEFINES += LOG_LEVEL=0
+
+LOCAL_SRC += $(LOCAL_PATH)/src/common/mpu6050.c
+LOCAL_INC += $(LOCAL_PATH)/inc
+LOCAL_EXPORT += $(LOCAL_PATH)/api
+
+LOCAL_STATIC_LIBS := \
+	ganymede \
+	i2c-mstr \
+	logging
+
+LOCAL_TARGET := atmega168
+include $(BUILD_STATIC_LIB)
+
+LOCAL_TARGET := atmega328p
+include $(BUILD_STATIC_LIB)
+
 
 # ========================================
 include $(CLEAR_VARS)

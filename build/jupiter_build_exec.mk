@@ -29,7 +29,7 @@ $(_DIR_OUT)/$(LOCAL_MODULE).hex: $(_DIR_OUT)/$(LOCAL_MODULE).elf
 	$(OBJCOPY_$(LOCAL_TARGET)) -O ihex -R .eeprom $< $@
 
 upload_$(LOCAL_TARGET)_$(LOCAL_MODULE): $(_DIR_OUT)/$(LOCAL_MODULE).hex
-	avrdude -F -V -c arduino -p ATMEGA3290 -P $(AVRDUDE_PORT) -b 57600 -U flash:w:$<
+	avrdude -F -V -c arduino -p ATMEGA3290 -P $(AVRDUDE_PORT) -b $(AVRDUDE_BAUD) -U flash:w:$<
 endif
 
 

@@ -16,12 +16,21 @@
 #define MPU_TEMPERATURE_OFFSET (0)
 #define MPU_TEMPERATURE_SCALE (340)
 
+#define MPU_CALIBRATION_FACTOR 200
+
 #define ARR_SIZE(x) (sizeof(x) / sizeof(*(x)))
 
 struct mpu_reg_set_s {
     uint8_t addr;
     uint8_t val;
 };
+
+struct mpu_calib_s {
+    float gyro_err[3];
+};
+
+
+struct mpu_calib_s mpu_calib;
 
 static struct mpu_reg_set_s mpu_init_cfg[] = {
     {MPU_PWR_MGMT_1_ADDR,   (1 << MPU_PWR_MGMT_1_RESET_SHFT)},     // reset
@@ -40,6 +49,10 @@ static struct mpu_reg_set_s mpu_init_cfg[] = {
       | (0 << MPU_PWR_MGMT_2_STBY_ZG_SHFT)
       | (0 << MPU_PWR_MGMT_2_LP_WAKE_CTRL_SHFT) // sampling rate 1.25 Hz
 
+    },
+
+    {MPU_CONFIG_ADDR, 0
+      | (0x4 << MPU_CONFIG_EXT_SYNC_SET_SHFT) // set gyro Z as the clock source
     },
 
     {MPU_INT_PIN_CFG_ADDR, 0
@@ -103,7 +116,7 @@ void mpu_read(mpu_data_t* data)
 
     for (i=0; i < 3; ++i) {
         val = (int16_t)ntohs(buff[0 + i]);
-        data->accel[i] = val / 16384.0f;
+        data->accel[i] = val / 16384.0f; // assumes accel full-scale range of +- 2g
     }
 
     val = (int16_t)ntohs(buff[3]);
@@ -111,7 +124,8 @@ void mpu_read(mpu_data_t* data)
 
     for (i=0; i < 3; ++i) {
         val = (int16_t)ntohs(buff[4 + i]);
-        data->gyro[i] = val / 131.0f;
+        data->gyro[i] = val / 131.0f; // assumes gyro full-scale range of +- 250 d/s
+        data->gyro[i] -= mpu_calib.gyro_err[i];
     }
 
 }
@@ -129,7 +143,7 @@ void mpu_init()
     // sanity
     mpu_addr = mpu_regread(MPU_WHO_AM_I_ADDR);
 
-    if (MPU_ADDR != mpu_addr) {
+    if (MPU_WHO_AM_I_POR != mpu_addr) {
         LOG_ERROR(MPU, "invalid addr: %x", mpu_addr);
         gmd_panic();
     }
@@ -143,5 +157,35 @@ void mpu_init()
 
 uint8_t mpu_get_status()
 {
-    return mpu_regread(MPU_INT_STATUS_ADDR);
+    uint8_t val;
+    val = mpu_regread(MPU_INT_STATUS_ADDR);
+    //mpu_regwrite(MPU_INT_STATUS_ADDR, 0);
+    return val;
+}
+
+void mpu_calibrate()
+{
+    uint8_t i, j;
+    struct mpu_calib_s calib;
+    mpu_data_t data;
+
+    memset(&mpu_calib, 0, sizeof(mpu_calib));
+    memset(&calib, 0, sizeof(calib));
+
+    for (j=0; j < MPU_CALIBRATION_FACTOR; ++j) {
+
+        // wait for data to be ready
+        for (i=0; 0 == mpu_get_status(); ++i);
+
+        // acumulate error, assuming the sensor is not moving
+        mpu_read(&data);
+        for (i=0; i < ARR_SIZE(calib.gyro_err); ++i) {
+            calib.gyro_err[i] += data.gyro[i];
+        }
+    }
+
+    // calculate error average over all the collected samples
+    for (i=0; i < ARR_SIZE(calib.gyro_err); ++i) {
+        mpu_calib.gyro_err[i] = calib.gyro_err[i] / MPU_CALIBRATION_FACTOR;
+    }
 }

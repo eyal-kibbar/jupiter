@@ -5,6 +5,6 @@
 
 void failsafe_init(uint8_t sec);
 void failsafe_dec(uint8_t sec);
-void failsafe_reset();
+void failsafe_reset(uint8_t counter_idx);
 
 #endif /* FAILSAFE_H_ */

@@ -53,6 +53,7 @@
 
 #define MPU_WHO_AM_I_ADDR 0x75
 
-#define MPU_WHO_AM_I_POR 0x71
+//#define MPU_WHO_AM_I_POR 0x71  // MPU 9000
+#define MPU_WHO_AM_I_POR 0x68    // MPU 6000
 
 #endif /* MPU_REGS_H_ */

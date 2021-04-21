@@ -19,7 +19,7 @@ void loop()
     LOG_INFO(TEST, "testing %d", i);
     gmd_delay(1000);
     if (i < 10) {
-        failsafe_reset();
+        failsafe_reset(0);
     }
 }
 

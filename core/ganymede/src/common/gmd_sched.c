@@ -199,14 +199,14 @@ uint16_t gmd_wfe(volatile uint8_t* p_event, uint8_t mask, uint8_t event, uint16_
     return sleeping_ms;
 }
 
-void gmd_delay(uint16_t ms)
+uint16_t gmd_delay(uint16_t ms)
 {
     volatile uint8_t no_evt = 0;
     if (0 == ms) {
         gmd_sched.curr->state = TASK_STATE_IDLE;
         sched_task_switch(&gmd_sched.scheduler);
-        return;
+        return 0;
     }
 
-    gmd_wfe(&no_evt, 0, 0, ms);
+    return gmd_wfe(&no_evt, 0, 0, ms);
 }

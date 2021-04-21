@@ -32,7 +32,7 @@ struct mpu_calib_s {
 
 struct mpu_calib_s mpu_calib;
 
-static struct mpu_reg_set_s mpu_init_cfg[] = {
+static const struct mpu_reg_set_s mpu_init_cfg[] = {
     {MPU_PWR_MGMT_1_ADDR,   (1 << MPU_PWR_MGMT_1_RESET_SHFT)},     // reset
     {MPU_GYRO_CONFIG_ADDR,  (0 << MPU_GYRO_CONFIG_FS_SEL_SHFT)},   // set gyro to +-250 d/s
     {MPU_ACCEL_CONFIG_ADDR, (0 << MPU_ACCEL_CONFIG_AFS_SEL_SHFT)}, // set accel to +-2g
@@ -159,6 +159,7 @@ uint8_t mpu_get_status()
 {
     uint8_t val;
     val = mpu_regread(MPU_INT_STATUS_ADDR);
+    //LOG_INFO(MPU, "status: %02x", val);
     //mpu_regwrite(MPU_INT_STATUS_ADDR, 0);
     return val;
 }
@@ -168,6 +169,8 @@ void mpu_calibrate()
     uint8_t i, j;
     struct mpu_calib_s calib;
     mpu_data_t data;
+
+    LOG_INFO(MPU, "calibrating");
 
     memset(&mpu_calib, 0, sizeof(mpu_calib));
     memset(&calib, 0, sizeof(calib));
@@ -188,4 +191,10 @@ void mpu_calibrate()
     for (i=0; i < ARR_SIZE(calib.gyro_err); ++i) {
         mpu_calib.gyro_err[i] = calib.gyro_err[i] / MPU_CALIBRATION_FACTOR;
     }
+
+    LOG_INFO(MPU, "calibration done: %d %d %d",
+        (int16_t)(1000 * mpu_calib.gyro_err[0]),
+        (int16_t)(1000 * mpu_calib.gyro_err[1]),
+        (int16_t)(1000 * mpu_calib.gyro_err[2]));
+
 }

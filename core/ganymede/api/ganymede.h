@@ -38,7 +38,7 @@ void init() __attribute__((weak));
         } \
     }
 
-void gmd_delay(uint16_t ms);
+uint16_t gmd_delay(uint16_t ms);
 
 /**
  * wait until event changes

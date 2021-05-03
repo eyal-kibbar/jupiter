@@ -3,13 +3,10 @@
 #include "logging.h"
 #include "hwio.h"
 #include "bmp180_regs.h"
-
+#include "utils.h"
 #if !defined(BMP180_OSS) || BMP180_OSS<0 || BMP180_OSS>3
     #error "set bmp180 mode: BMP180_OSS [0-3]"
 #endif
-
-#define htons(A) ((((uint16_t)(A) & 0xff00) >> 8) | (((uint16_t)(A) & 0x00ff) << 8))
-#define ntohs htons
 
 typedef struct reg_set_s {
     uint8_t addr;

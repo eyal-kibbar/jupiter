@@ -7,7 +7,10 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := mpu-dbg
 
-LOCAL_DEFINES += LOG_LEVEL=3
+LOCAL_DEFINES := \
+	LOG_LEVEL=3 \
+	MPU_GYRO_FULL_SCALE_RANGE=250 \
+	MPU_ACCEL_FULL_SCALE_RANGE=2 \
 
 LOCAL_SRC += $(LOCAL_PATH)/src/common/mpu6050.c
 LOCAL_INC += $(LOCAL_PATH)/inc
@@ -30,7 +33,10 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := mpu
 
-LOCAL_DEFINES += LOG_LEVEL=0
+LOCAL_DEFINES := \
+	LOG_LEVEL=0 \
+	MPU_GYRO_FULL_SCALE_RANGE=2000 \
+	MPU_ACCEL_FULL_SCALE_RANGE=2
 
 LOCAL_SRC += $(LOCAL_PATH)/src/common/mpu6050.c
 LOCAL_INC += $(LOCAL_PATH)/inc
@@ -52,7 +58,7 @@ include $(BUILD_STATIC_LIB)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := mpu-tst
-LOCAL_DEFINES += STACK_SIZE=256
+LOCAL_DEFINES += STACK_SIZE=512
 LOCAL_DEFINES += LOG_LEVEL=3
 LOCAL_STATIC_LIBS := \
 	mpu-dbg \
@@ -81,6 +87,8 @@ LOCAL_STATIC_LIBS := \
 
 LOCAL_TASKS       := mpu-tst
 
+# for printing floats
+LOCAL_LDFLAGS := -Wl,-u,vfprintf -lprintf_flt
 
 LOCAL_TARGET      := atmega328p
 include $(BUILD_EXEC)

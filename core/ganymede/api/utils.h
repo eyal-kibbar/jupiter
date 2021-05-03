@@ -14,4 +14,9 @@
 
 #define COMPILER_CHECK(cond) struct CONCAT(CHECK_,__COUNTER__) { int X[1-2*(!(cond))]; }
 
+
+#define htons(A) ((((uint16_t)(A) & 0xff00) >> 8) | (((uint16_t)(A) & 0x00ff) << 8))
+#define ntohs htons
+
+
 #endif /* UTILS_H_ */

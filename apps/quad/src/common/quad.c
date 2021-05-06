@@ -12,6 +12,9 @@
 #include "quad.h"
 #include <string.h>
 
+
+#define QUAD_ANGLE_FILTER_ALPHA 0.98
+
 enum quad_state_e {
     QUAD_INIT,
     QUAD_BALANCING
@@ -24,6 +27,8 @@ struct quad_s {
     float throtte;
 
     float angles[3];
+    int16_t motor[4];
+
     uint16_t timer_us;
     uint16_t timer_ms;
 
@@ -43,6 +48,7 @@ void setup()
     io_logging_init();
     io_i2c_master_init();
     failsafe_init(3);
+    servo_init();
 
     quad.pid_cfg.kp = 1;
     quad.pid_cfg.ki = 0.5;
@@ -55,12 +61,20 @@ void setup()
     quad.pid_cfg.output_limit = 400;
 }
 
+void quad_angles_get(float rpy[3])
+{
+    memcpy(rpy,  quad.angles, sizeof(quad.angles));
+}
 
+void quad_get_servo_microseconds(int16_t motor[4])
+{
+    memcpy(motor,  quad.motor, sizeof(quad.motor));
+}
 
 void init()
 {
     mpu_init();
-    servo_init();
+
 
     servo_attach(4);
     servo_attach(5);
@@ -75,6 +89,7 @@ void init()
     mpu_calibrate();
 
     TCNT2 = 0;
+    //quad_start();
 
 }
 
@@ -151,44 +166,45 @@ static void quad_wait_for_data()
     }
 }
 
-static uint16_t quad_set_servo(float pid_output[3], float pid_throttle)
+static void quad_mixer(float pid_output[3], float pid_throttle)
 {
     uint8_t i;
-    int16_t motor[4];
 
     // quad +
     //         throtte        roll           pitch           yaw
-    motor[0] = pid_throttle                 + pid_output[1] - pid_output[2]; //REAR
-    motor[1] = pid_throttle - pid_output[0]                 + pid_output[2]; //RIGHT
-    motor[2] = pid_throttle + pid_output[0]                 + pid_output[2]; //LEFT
-    motor[3] = pid_throttle                 - pid_output[1] - pid_output[2]; //FRONT
+    quad.motor[0] = pid_throttle                 + pid_output[1] - pid_output[2]; //REAR
+    quad.motor[1] = pid_throttle - pid_output[0]                 + pid_output[2]; //RIGHT
+    quad.motor[2] = pid_throttle + pid_output[0]                 + pid_output[2]; //LEFT
+    quad.motor[3] = pid_throttle                 - pid_output[1] - pid_output[2]; //FRONT
 
 
 
     // quad x
     /*
-    motor[0] = pid_throttle - pid_output[0] + pid_output[1] - pid_output[2]; //REAR_R
-    motor[1] = pid_throttle - pid_output[0] - pid_output[1] + pid_output[2]; //FRONT_R
-    motor[2] = pid_throttle + pid_output[0] + pid_output[1] + pid_output[2]; //REAR_L
-    motor[3] = pid_throttle + pid_output[0] - pid_output[1] - pid_output[2]; //FRONT_L
+    quad.motor[0] = pid_throttle - pid_output[0] + pid_output[1] - pid_output[2]; //REAR_R
+    quad.motor[1] = pid_throttle - pid_output[0] - pid_output[1] + pid_output[2]; //FRONT_R
+    quad.motor[2] = pid_throttle + pid_output[0] + pid_output[1] + pid_output[2]; //REAR_L
+    quad.motor[3] = pid_throttle + pid_output[0] - pid_output[1] - pid_output[2]; //FRONT_L
     */
 
     for (i=0; i < 4; ++i) {
-        motor[i] = MIN(motor[i], 2000);
-        motor[i] = MAX(motor[i], 1100);
+        quad.motor[i] = MIN(quad.motor[i], 2000);
+        quad.motor[i] = MAX(quad.motor[i], 1100);
     }
 
     LOG_INFO(TEST, "%4d %4d %4d %4d",
-        motor[0],
-        motor[1],
-        motor[2],
-        motor[3]
+        quad.motor[0],
+        quad.motor[1],
+        quad.motor[2],
+        quad.motor[3]
     );
 
-    servo_set_mircoseconds(4, motor[0]);
-    servo_set_mircoseconds(5, motor[1]);
-    servo_set_mircoseconds(6, motor[2]);
-    servo_set_mircoseconds(7, motor[3]);
+    servo_set_mircoseconds(4, quad.motor[0]);
+    servo_set_mircoseconds(5, quad.motor[1]);
+    servo_set_mircoseconds(6, quad.motor[2]);
+    servo_set_mircoseconds(7, quad.motor[3]);
+
+
 }
 
 
@@ -200,7 +216,8 @@ void loop()
     float pid_output[3];
     mpu_data_t data;
     uint8_t curr_ts;
-    float dt;
+    float dt, yaw_sin;
+    float pitch, roll;
 
     failsafe_reset(0);
 
@@ -217,17 +234,24 @@ void loop()
     dt = quad_timer_clear();
 
     quad_timer_sleep(0);
-    accel_angles[0] = calc_angle(-data.accel[0], data.accel[2]);
-    accel_angles[1] = calc_angle(data.accel[1],  data.accel[2]);
+    accel_angles[0] = calc_angle(data.accel[1], data.accel[2]);
+    accel_angles[1] = calc_angle(data.accel[0], data.accel[2]);
 
-    gyro_angles[0] = data.gyro[1] * dt;
-    gyro_angles[1] = data.gyro[0] * dt;
+    gyro_angles[0] = data.gyro[0] * dt;
+    gyro_angles[1] = -data.gyro[1] * dt;
     gyro_angles[2] = data.gyro[2] * dt;
 
+    // fix yaw transfer
+    yaw_sin = sin(gyro_angles[2] * (M_PI/180));
+
+    pitch = quad.angles[0];
+    roll = quad.angles[1];
+    quad.angles[0] = (quad.angles[0] + gyro_angles[0]) - (roll * yaw_sin);
+    quad.angles[1] = (quad.angles[1] + gyro_angles[1]) + (pitch * yaw_sin);
 
     // apply complementary filter for pitch and roll
-    quad.angles[0] = (0.7 * (quad.angles[0] + gyro_angles[0])) + 0.3 * accel_angles[0];
-    quad.angles[1] = (0.7 * (quad.angles[1] + gyro_angles[1])) + 0.3 * accel_angles[1];
+    quad.angles[0] = (QUAD_ANGLE_FILTER_ALPHA * quad.angles[0]) + ((1-QUAD_ANGLE_FILTER_ALPHA) * accel_angles[0]);
+    quad.angles[1] = (QUAD_ANGLE_FILTER_ALPHA * quad.angles[1]) + ((1-QUAD_ANGLE_FILTER_ALPHA) * accel_angles[1]);
     quad.angles[2] = quad.angles[2] + gyro_angles[2]; // use only gyro for yaw
 
     quad_timer_sleep(0); // flush current time to avoid timer overflow
@@ -237,9 +261,14 @@ void loop()
     pid_output[2] = pid_step(&quad.pid_cfg, &quad.pid_yaw_state,   quad.angles[2], dt, quad.setpoint[2]);
 
     quad_timer_sleep(0);
-    quad_set_servo(pid_output, quad.throtte);
+    quad_mixer(pid_output, quad.throtte);
     quad_timer_sleep(0);
-    //LOG_INFO(TEST, "%d %d", (int16_t)roundf(output_roll), (int16_t)roundf(dt * 1000));
+
+    
+    LOG_INFO(QUAD, "%03d %03d %03d",
+        (int16_t)roundf(quad.angles[0]),
+        (int16_t)roundf(quad.angles[1]),
+        (int16_t)roundf(quad.angles[2]));
 
     quad_timer_sleep(100);
 }

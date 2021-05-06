@@ -6,7 +6,8 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := barometer-dbg
 
 LOCAL_DEFINES := \
-	LOG_LEVEL=3
+	LOG_LEVEL=3 \
+	BMP180_OSS=0
 
 LOCAL_EXPORT := $(LOCAL_PATH)/api
 
@@ -44,6 +45,7 @@ LOCAL_DEFINES := \
 LOCAL_STATIC_LIBS := \
 	barometer-dbg \
 	ganymede-dbg \
+	i2c-mstr \
 	logging
 
 LOCAL_SRC := $(LOCAL_PATH)/tst/barometer_test.c
@@ -63,8 +65,9 @@ LOCAL_MODULE      := jupiter-barometer-tst
 
 LOCAL_STATIC_LIBS := \
 	barometer-dbg \
-	ganymede-dbg \
-	i2c-mstr-dbg \
+	ganymede \
+	i2c-mstr \
+	uart \
 	logging
 
 LOCAL_TASKS       := barometer-tst

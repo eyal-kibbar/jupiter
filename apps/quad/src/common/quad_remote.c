@@ -17,7 +17,7 @@ void setup()
 {
     uint8_t i;
 
-    io_uart_init(0, 9600);
+    io_uart_init(0, 57600);
     io_logging_init();
     io_pin_output(SS_PIN);
     io_pin_set(SS_PIN);
@@ -62,7 +62,9 @@ void loop()
     uint8_t i;
     int rc;
     radio_pkt_t pkt;
-    uint32_t std;
+    quad_response_pkt_t resp_pkt;
+    uint8_t resp_pipe_idx;
+    uint8_t resp_pkt_size;
 
     // read all inputs
     //io_analog_read(7, IO_ANALOG_REF_AVcc, &pkt->pot_left);
@@ -87,14 +89,23 @@ void loop()
 
     if ((rc = nrf_send((uint8_t*)&pkt, sizeof(pkt)))) {
         io_pin_clr(LED_PIN);
-    }
-    else {
-        io_pin_set(LED_PIN);
+        return;
     }
 
-    LOG_INFO(QUAD_REMOTE, "sending switches: %02x left: %d right: %d ", pkt.switches, pkt.pot_left, pkt.pot_right);
+    // send succeeded + got an ACK packet
+    io_pin_set(LED_PIN);
 
 
+    // receive the quad respose packet
+    resp_pkt_size = sizeof resp_pkt;
+    if (0 == nrf_recv((uint8_t*)&resp_pkt, &resp_pkt_size, &resp_pipe_idx)) {
+        LOG_INFO(QUAD_REMOTE, "got %d bytes, pipe %d:%.02f,%.02f,%.02f,%04d,%04d,%04d,%04d",
+            resp_pkt_size, resp_pipe_idx,
+            resp_pkt.angles[0], resp_pkt.angles[1], resp_pkt.angles[2],
+            resp_pkt.motor[0], resp_pkt.motor[1], resp_pkt.motor[2], resp_pkt.motor[3]);
+    }
+
+    //LOG_INFO(QUAD_REMOTE, "sending switches: %02x left: %d right: %d ", pkt.switches, pkt.pot_left, pkt.pot_right);
 }
 
 

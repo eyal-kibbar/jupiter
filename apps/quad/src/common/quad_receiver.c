@@ -5,6 +5,7 @@
 #include "quad_protocol.h"
 #include "quad.h"
 #include "failsafe.h"
+#include <string.h>
 
 #define SS_PIN 2
 #define CE_PIN 3
@@ -40,6 +41,7 @@ float map(float v, float vmin, float vmax, float omin, float omax)
 void loop()
 {
     radio_pkt_t pkt;
+    quad_response_pkt_t resp_pkt;
     uint8_t payload_len = sizeof(pkt);
     uint8_t pipe_idx = 0;
     float setpoint[3];
@@ -47,6 +49,13 @@ void loop()
     int rc;
 
     failsafe_reset(1); // reset entire system if we lost communication
+
+    memset(&resp_pkt, 0, sizeof resp_pkt);
+
+    // set the respose packet
+    quad_angles_get(resp_pkt.angles);
+    quad_get_servo_microseconds(resp_pkt.motor);
+    nrf_send_pending(1, (uint8_t*)&resp_pkt, sizeof(resp_pkt));
 
     //LOG_INFO(RADIO_RX, "receiving");
     if ((rc = nrf_recv((uint8_t*)&pkt, &payload_len, &pipe_idx))) {

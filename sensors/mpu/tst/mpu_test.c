@@ -61,7 +61,7 @@ void loop()
 
     uint16_t curr_ts;
     uint8_t* p_curr_ts = (uint8_t*)&curr_ts;
-    float dt;
+    float dt, pitch, roll;
 
     if (0 == (0x1 & (val = mpu_get_status()))) {
         LOG_INFO(TEST, "data not ready: %02x", val);
@@ -76,21 +76,18 @@ void loop()
 
     mpu_read(&data);
 
-    accel_angles[0] = calc_angle(-data.accel[1], -data.accel[2]);
-    accel_angles[1] = calc_angle(-data.accel[0], -data.accel[2]);
+    accel_angles[0] = calc_angle(data.accel[1], data.accel[2]);
+    accel_angles[1] = calc_angle(data.accel[0], data.accel[2]);
 
     // convert clock ticks to seconds (gyro output is in degrees per second)
     dt = (curr_ts * 4.0) / 1000000.0;
 
     // calculate the average of the last 2 readings for the integral
-    gyro_angles[0] = (prev_gyro[0] + data.gyro[0]) * dt * 0.5;
-    gyro_angles[1] = (prev_gyro[0] - data.gyro[1]) * dt * 0.5;
-    gyro_angles[2] = (prev_gyro[0] + data.gyro[2]) * dt * 0.5;
+    gyro_angles[0] =  data.gyro[0] * dt;
+    gyro_angles[1] = -data.gyro[1] * dt;
+    gyro_angles[2] =  data.gyro[2] * dt;
 
 
-    prev_gyro[0] = data.gyro[0];
-    prev_gyro[1] = data.gyro[1];
-    prev_gyro[2] = data.gyro[2];
 
     gyro_integral_angles[0] += gyro_angles[0];
     gyro_integral_angles[1] += gyro_angles[1];
@@ -98,8 +95,9 @@ void loop()
 
     // fix yaw transfer
 
-
-    angles[0] = (angles[0] + gyro_angles[0]) - (angles[1] * sin(gyro_angles[2] * (M_PI/180)));
+    pitch = angles[0];
+    roll  = angles[1];
+    angles[0] = (angles[0] + gyro_angles[0]) - (roll  * sin(gyro_angles[2] * (M_PI/180)));
     angles[1] = (angles[1] + gyro_angles[1]) + (angles[0] * sin(gyro_angles[2] * (M_PI/180)));
 
     // apply complementary filter for pitch and roll
@@ -107,10 +105,11 @@ void loop()
     angles[1] = (MPU_FILTER_COEF * angles[1]) + (1-MPU_FILTER_COEF) * accel_angles[1];
     angles[2] = angles[2] + gyro_angles[2]; // use only gyro for yaw
 
-    //snprintf(s, sizeof s, "%3.03f   %3.03f   %3.03f", angles[0], angles[1], angles[2]);
-    //io_uart_sg(0, tx, ARR_SIZE(tx), 0);
+    snprintf(s, sizeof s, "%3.03f   %3.03f   %3.03f    ", angles[0], angles[1], angles[2]);
+    io_uart_sg(0, tx, ARR_SIZE(tx), 0);
 
     // print results for arduplot.py script
+    /*
     LOG_INFO(TEST, "%d,%d,%d,%d,%d,%d,%d,%d,%d",
         (int16_t)roundf(accel_angles[0]),
         (int16_t)roundf(gyro_integral_angles[0]),
@@ -123,7 +122,7 @@ void loop()
         (int16_t)roundf(gyro_integral_angles[2]),
         (int16_t)roundf(angles[2]),
         curr_ts);
-
+        */
 
     gmd_delay(100);
 }

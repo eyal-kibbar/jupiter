@@ -10,7 +10,7 @@ void setup()
     io_uart_init(0, 9600);
     io_logging_init();
     //io_analog_init();
-    failsafe_init(5);
+    failsafe_init(5, gmd_panic);
 }
 
 void loop()

@@ -65,14 +65,16 @@ struct mpu_calib_s mpu_calib;
 
 
 static const struct mpu_reg_set_s mpu_init_cfg[] = {
-    {MPU_PWR_MGMT_1_ADDR,   (1 << MPU_PWR_MGMT_1_RESET_SHFT)},     // reset
     {MPU_GYRO_CONFIG_ADDR,  (MPU_GYRO_CONFIG_FS_SEL_VAL << MPU_GYRO_CONFIG_FS_SEL_SHFT)},
     {MPU_ACCEL_CONFIG_ADDR, (MPU_ACCEL_CONFIG_FS_SEL_VAL << MPU_ACCEL_CONFIG_AFS_SEL_SHFT)}, // set accel to +-2g
+
 
     {MPU_PWR_MGMT_1_ADDR, 0
       /*| (1 << MPU_PWR_MGMT_1_CYCLE_SHFT) // sleep between samples*/
       /*| (1 << MPU_PWR_MGMT_1_TEMP_DIS_SHFT)*/
+      | 3 << MPU_PWR_MGMT_1_CLKSEL_SHFT
     }, // wake
+
 
 
     {MPU_PWR_MGMT_2_ADDR, 0
@@ -85,6 +87,7 @@ static const struct mpu_reg_set_s mpu_init_cfg[] = {
 
     {MPU_CONFIG_ADDR, 0
       | (0x4 << MPU_CONFIG_EXT_SYNC_SET_SHFT) // set gyro Z as the clock source
+      | (0x5 << MPU_CONFIG_DLPF_CFG_SHFT) // set digital low pass filter
     },
 
     {MPU_INT_PIN_CFG_ADDR, 0
@@ -98,6 +101,7 @@ static const struct mpu_reg_set_s mpu_init_cfg[] = {
     }, // enable interrupt
 };
 
+
 static void mpu_regwrite(uint8_t addr, uint8_t val)
 {
     uint8_t buf[2];
@@ -106,7 +110,8 @@ static void mpu_regwrite(uint8_t addr, uint8_t val)
     buf[0] = addr;
     buf[1] = val;
 
-    LOG_INFO(MPU, "reg %02x: %02x", addr, val);
+    //LOG_INFO(MPU, "reg %02x: %02x", addr, val);
+
     io_i2c_tx_begin(MPU_ADDR);
     io_i2c_master_sg(&tx, 1, 0);
     io_i2c_tx_end();
@@ -125,6 +130,12 @@ static uint8_t mpu_regread(uint8_t addr)
     io_i2c_master_sg(tx, 2, 0);
     io_i2c_tx_end();
     return val;
+}
+
+static void mpu_reset()
+{
+    mpu_regwrite(MPU_PWR_MGMT_1_ADDR, 1 << MPU_PWR_MGMT_1_RESET_SHFT);
+    gmd_delay(100);
 }
 
 void mpu_raw_read(mpu_rawdata_t* rawdata)
@@ -189,6 +200,7 @@ void mpu_init()
     uint8_t i;
     uint8_t mpu_addr = 0;
 
+    mpu_reset();
     for (i=0; i < ARR_SIZE(mpu_init_cfg); ++i) {
         mpu_regwrite(mpu_init_cfg[i].addr, mpu_init_cfg[i].val);
     }

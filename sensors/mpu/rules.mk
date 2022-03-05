@@ -32,10 +32,10 @@ include $(BUILD_STATIC_LIB)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := mpu
-
+# TODO: change to 2000 FSR
 LOCAL_DEFINES := \
 	LOG_LEVEL=0 \
-	MPU_GYRO_FULL_SCALE_RANGE=2000 \
+	MPU_GYRO_FULL_SCALE_RANGE=250 \
 	MPU_ACCEL_FULL_SCALE_RANGE=2
 
 LOCAL_SRC += $(LOCAL_PATH)/src/common/mpu6050.c
@@ -46,6 +46,8 @@ LOCAL_STATIC_LIBS := \
 	ganymede \
 	i2c-mstr \
 	logging
+
+LOCAL_CFLAGS := -O3
 
 LOCAL_TARGET := atmega168
 include $(BUILD_STATIC_LIB)

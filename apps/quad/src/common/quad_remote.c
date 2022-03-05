@@ -35,7 +35,7 @@ void setup()
 
     io_pin_output(LED_PIN);
     io_pin_clr(LED_PIN);
-
+    //io_pin_set(LED_PIN);
     io_analog_init();
 }
 
@@ -74,6 +74,8 @@ void loop()
     io_analog_read(2, IO_ANALOG_REF_AVcc, &pkt.j_right_x);
     io_analog_read(3, IO_ANALOG_REF_AVcc, &pkt.j_right_y);
 
+    pkt.j_left_y = (uint16_t)((float)pkt.j_left_y * 0.8);
+
     for (i=0; i < ARR_SIZE(switches_map); ++i) {
         uint8_t switch_status = io_pin_get(switches_map[i]);
         pkt.switches &= ~(1 << i);
@@ -86,7 +88,26 @@ void loop()
         pkt.buttons |= (!!button_status) << i;
     }
 
+    pkt.cmd = QUAD_CMD_NOP;
+    if (pkt.switches & 0x2) {
+        if (0 == (pkt.buttons & 0x1)) {
+            pkt.cmd = QUAD_CMD_ADD_P;
+        } else if (0 == (pkt.buttons & 0x2)) {
+            pkt.cmd = QUAD_CMD_SUB_P;
+        }
+    }
+    else {
+        if (0 == (pkt.buttons & 0x1)) {
+            pkt.cmd = QUAD_CMD_ADD_D;
+        } else if (0 == (pkt.buttons & 0x2)) {
+            pkt.cmd = QUAD_CMD_SUB_D;
+        }
+    }
 
+    //LOG_INFO(QUAD_REMOTE, "command: %d %08x", pkt.cmd, pkt.buttons);
+    //gmd_delay(100);
+    //return;
+    //LOG_INFO(QUAD_REMOTE, "sending switches: %02x left: %d right: %d ", pkt.switches, pkt.j_left_y, pkt.j_right_y);
     if ((rc = nrf_send((uint8_t*)&pkt, sizeof(pkt)))) {
         io_pin_clr(LED_PIN);
         return;
@@ -97,15 +118,29 @@ void loop()
 
 
     // receive the quad respose packet
+
     resp_pkt_size = sizeof resp_pkt;
     if (0 == nrf_recv((uint8_t*)&resp_pkt, &resp_pkt_size, &resp_pipe_idx)) {
-        LOG_INFO(QUAD_REMOTE, "got %d bytes, pipe %d:%.02f,%.02f,%.02f,%04d,%04d,%04d,%04d",
-            resp_pkt_size, resp_pipe_idx,
+        /*
+        LOG_INFO(QUAD_REMOTE, "%d b | %d:%.06f,%.02f,%.02f,%.02f,%04d,%04d,%04d,%04d",
+            resp_pkt_size, resp_pipe_idx, resp_pkt.dt,
             resp_pkt.angles[0], resp_pkt.angles[1], resp_pkt.angles[2],
             resp_pkt.motor[0], resp_pkt.motor[1], resp_pkt.motor[2], resp_pkt.motor[3]);
+            */
+            /*
+        LOG_INFO(QUAD_REMOTE, "%d b | %.02f,%.02f,%.02f,%.02f,%.02f,%.02f,%.02f",
+            resp_pkt_size, resp_pipe_idx, resp_pkt.dt,
+            resp_pkt.angles[0], resp_pkt.angles[1], resp_pkt.angles[2],
+            resp_pkt.pid_cfg[0], resp_pkt.pid_cfg[1], resp_pkt.pid_cfg[2]
+        );
+        */
+        LOG_INFO(QUAD_REMOTE, "%d b | %d:%.02f,%.02f,%.02f",
+            resp_pkt_size, resp_pipe_idx,
+            resp_pkt.pid_cfg_kp, resp_pkt.pid_cfg_ki, resp_pkt.pid_cfg_kd
+        );
     }
 
-    //LOG_INFO(QUAD_REMOTE, "sending switches: %02x left: %d right: %d ", pkt.switches, pkt.pot_left, pkt.pot_right);
+
 }
 
 

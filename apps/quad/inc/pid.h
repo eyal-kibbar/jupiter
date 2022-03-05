@@ -10,7 +10,7 @@ typedef struct pid_config_s {
 } pid_config_t;
 
 typedef struct pid_state_s {
-    float prev_input;
+    float prev_error;
     float error_integral;
 } pid_state_t;
 

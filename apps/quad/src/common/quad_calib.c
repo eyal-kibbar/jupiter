@@ -10,7 +10,7 @@ static uint16_t micros;
 
 void setup()
 {
-    io_uart_init(0, 57600);
+    io_uart_init(0, 9600);
     io_logging_init();
     io_i2c_master_init();
     servo_init();
@@ -19,7 +19,23 @@ void setup()
 
 void init()
 {
-    servo_attach(10);
+    servo_attach(4);
+    servo_attach(5);
+    servo_attach(6);
+    servo_attach(7);
+
+
+    servo_set_mircoseconds(4, 2000);
+    servo_set_mircoseconds(5, 2000);
+    servo_set_mircoseconds(6, 2000);
+    servo_set_mircoseconds(7, 2000);
+
+    gmd_delay(2000);
+
+    servo_set_mircoseconds(4, 1000);
+    servo_set_mircoseconds(5, 1000);
+    servo_set_mircoseconds(6, 1000);
+    servo_set_mircoseconds(7, 1000);
 
     mpu_init();
 
@@ -63,22 +79,24 @@ void vibration_calc()
 
 void loop()
 {
-    char c[3];
+    char c[4];
+    uint8_t motor;
     io_tx_t tx[] = {
         { .mode = IO_TX_MODE_W, .off = 0, .len = 1, .buf = "\r"},
-        { .mode = IO_TX_MODE_R, .off = 0, .len = 1, .buf = c},
+        { .mode = IO_TX_MODE_R, .off = 0, .len = 2, .buf = c},
         { .mode = IO_TX_MODE_W, .off = 0, .len = sizeof "COMMAND: ", .buf = "COMMAND: "},
-        { .mode = IO_TX_MODE_W, .off = 0, .len = 3, .buf = c},
+        { .mode = IO_TX_MODE_W, .off = 0, .len = 4, .buf = c},
     };
 
     c[0] = '\0';
-    c[1] = '\n';
-    c[2] = '\r';
+    c[1] = '\0';
+    c[2] = '\n';
+    c[3] = '\r';
 
 
     io_uart_sg(0, tx, ARR_SIZE(tx), 0);
 
-    switch (c[0]) {
+    switch (c[1]) {
         case 'h': micros = 2000; break;
         case 'l': micros = 1000; break;
         case '+': micros += 50; break;
@@ -87,10 +105,18 @@ void loop()
         default: LOG_INFO(QUAD_CALIB, "unknown command: '%c'", c[0]); return;
     }
 
+    switch (c[0]) {
+        case '4': motor = 4; break;
+        case '5': motor = 5; break;
+        case '6': motor = 6; break;
+        case '7': motor = 7; break;
+        default: LOG_INFO(QUAD_CALIB, "unknown command: '%c'", c[0]); return;
+    }
+
     micros = MIN(micros, 2000);
     micros = MAX(micros, 1000);
     LOG_INFO(QUAD_CALIB, "setting %u micros", micros);
-    servo_set_mircoseconds(10, micros);
+    servo_set_mircoseconds(motor, micros);
 }
 
 

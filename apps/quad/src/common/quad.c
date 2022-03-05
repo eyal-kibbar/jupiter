@@ -13,57 +13,38 @@
 #include <string.h>
 
 
-#define QUAD_ANGLE_FILTER_ALPHA 0.98
+#define QUAD_ANGLE_FILTER_ALPHA 0.90
 
-enum quad_state_e {
-    QUAD_INIT,
-    QUAD_BALANCING
-};
 
-struct quad_s {
-    enum quad_state_e state;
 
-    float setpoint[3];
-    float throtte;
 
-    float angles[3];
-    int16_t motor[4];
 
-    uint16_t timer_us;
-    uint16_t timer_ms;
-
-    pid_config_t pid_cfg;
-    pid_config_t pid_yaw_cfg;
-
-    pid_state_t pid_roll_state;
-    pid_state_t pid_pitch_state;
-    pid_state_t pid_yaw_state;
-};
-
-static struct quad_s quad;
+struct quad_s quad;
 
 void setup()
 {
     io_uart_init(0, 57600);
     io_logging_init();
+
     io_i2c_master_init();
-    failsafe_init(3);
+    failsafe_init(3, quad_stop);
     servo_init();
 
-    quad.pid_cfg.kp = 1;
-    quad.pid_cfg.ki = 0.5;
-    quad.pid_cfg.kd = 3;
+    quad.pid_cfg.kp = 0.4;
+    quad.pid_cfg.ki = 0.03;
+    quad.pid_cfg.kd = 4.0;
     quad.pid_cfg.output_limit = 400;
 
     quad.pid_yaw_cfg.kp = 1;
-    quad.pid_yaw_cfg.ki = 0.5;
+    quad.pid_yaw_cfg.ki = 0.00;
     quad.pid_yaw_cfg.kd = 0;
-    quad.pid_cfg.output_limit = 400;
+    quad.pid_yaw_cfg.output_limit = 200;
 }
 
-void quad_angles_get(float rpy[3])
+void quad_angles_get(float rpy[3], float* dt)
 {
     memcpy(rpy,  quad.angles, sizeof(quad.angles));
+    *dt = quad.dt;
 }
 
 void quad_get_servo_microseconds(int16_t motor[4])
@@ -73,13 +54,26 @@ void quad_get_servo_microseconds(int16_t motor[4])
 
 void init()
 {
-    mpu_init();
-
-
     servo_attach(4);
     servo_attach(5);
     servo_attach(6);
     servo_attach(7);
+
+    servo_set_mircoseconds(4, 2000);
+    servo_set_mircoseconds(5, 2000);
+    servo_set_mircoseconds(6, 2000);
+    servo_set_mircoseconds(7, 2000);
+
+    gmd_delay(2000);
+
+    servo_set_mircoseconds(4, 1000);
+    servo_set_mircoseconds(5, 1000);
+    servo_set_mircoseconds(6, 1000);
+    servo_set_mircoseconds(7, 1000);
+
+    gmd_delay(5000);
+
+    mpu_init();
 
     // initialize 8bit clock with 1024 prescaler
     // this gives us a 64 microseconds per tick: (16Mhz/1024)^-1
@@ -169,7 +163,6 @@ static void quad_wait_for_data()
 static void quad_mixer(float pid_output[3], float pid_throttle)
 {
     uint8_t i;
-
     // quad +
     //         throtte        roll           pitch           yaw
     quad.motor[0] = pid_throttle                 + pid_output[1] - pid_output[2]; //REAR
@@ -192,6 +185,7 @@ static void quad_mixer(float pid_output[3], float pid_throttle)
         quad.motor[i] = MAX(quad.motor[i], 1100);
     }
 
+    /*
     LOG_INFO(TEST, "%4d %4d %4d %4d",
         quad.motor[0],
         quad.motor[1],
@@ -199,6 +193,19 @@ static void quad_mixer(float pid_output[3], float pid_throttle)
         quad.motor[3]
     );
 
+
+    LOG_INFO(TEST, "%4d %4d   %03d",
+        quad.motor[0],
+        quad.motor[3],
+        (int16_t)roundf(quad.angles[1])
+    );
+    */
+    /*
+    servo_set_mircoseconds(4, 1000);
+    servo_set_mircoseconds(5, 1000);
+    servo_set_mircoseconds(6, 1000);
+    servo_set_mircoseconds(7, 1000);
+    */
     servo_set_mircoseconds(4, quad.motor[0]);
     servo_set_mircoseconds(5, quad.motor[1]);
     servo_set_mircoseconds(6, quad.motor[2]);
@@ -219,19 +226,14 @@ void loop()
     float dt, yaw_sin;
     float pitch, roll;
 
-    failsafe_reset(0);
+    //failsafe_reset(0);
 
-
-    if (quad.state != QUAD_BALANCING) {
-        gmd_delay(100);
-        quad_timer_clear();
-        return;
-    }
 
     quad_wait_for_data();
 
     mpu_read(&data);
     dt = quad_timer_clear();
+    quad.dt = dt;
 
     quad_timer_sleep(0);
     accel_angles[0] = calc_angle(data.accel[1], data.accel[2]);
@@ -254,23 +256,34 @@ void loop()
     quad.angles[1] = (QUAD_ANGLE_FILTER_ALPHA * quad.angles[1]) + ((1-QUAD_ANGLE_FILTER_ALPHA) * accel_angles[1]);
     quad.angles[2] = quad.angles[2] + gyro_angles[2]; // use only gyro for yaw
 
+
+
     quad_timer_sleep(0); // flush current time to avoid timer overflow
 
-    pid_output[0] = pid_step(&quad.pid_cfg, &quad.pid_roll_state,  quad.angles[0], dt, quad.setpoint[0]);
-    pid_output[1] = pid_step(&quad.pid_cfg, &quad.pid_pitch_state, quad.angles[1], dt, quad.setpoint[1]);
-    pid_output[2] = pid_step(&quad.pid_cfg, &quad.pid_yaw_state,   quad.angles[2], dt, quad.setpoint[2]);
+    //quad.setpoint[0] = quad.setpoint[1] = quad.setpoint[2] = 0;
 
-    quad_timer_sleep(0);
-    quad_mixer(pid_output, quad.throtte);
-    quad_timer_sleep(0);
+    if (quad.state == QUAD_BALANCING) {
+        pid_output[0] = pid_step(&quad.pid_cfg,     &quad.pid_roll_state,  quad.angles[0], 1, quad.setpoint[0]);
+        pid_output[1] = pid_step(&quad.pid_cfg,     &quad.pid_pitch_state, quad.angles[1], 1, quad.setpoint[1]);
+        //pid_output[2] = pid_step(&quad.pid_yaw_cfg, &quad.pid_yaw_state,   quad.angles[2], 1, quad.setpoint[2]);
+        pid_output[2]=0;
+        /*
+        pid_output[0] = pid_step(&quad.pid_cfg, &quad.pid_roll_state,  quad.angles[0], dt, quad.setpoint[0]);
+        pid_output[1] = pid_step(&quad.pid_cfg, &quad.pid_pitch_state, 0, dt, quad.setpoint[1]);
+        pid_output[2] = pid_step(&quad.pid_cfg, &quad.pid_yaw_state,   0, dt, quad.setpoint[2]);
+        */
+        quad_timer_sleep(0);
+        quad_mixer(pid_output, quad.throtte);
+    }
 
-    
+    quad_timer_sleep(10);
+
+    /*
     LOG_INFO(QUAD, "%03d %03d %03d",
         (int16_t)roundf(quad.angles[0]),
         (int16_t)roundf(quad.angles[1]),
         (int16_t)roundf(quad.angles[2]));
-
-    quad_timer_sleep(100);
+    */
 }
 
 void quad_start()
@@ -281,16 +294,16 @@ void quad_start()
 void quad_stop()
 {
     quad.state = QUAD_INIT;
-    servo_set_mircoseconds(4, 0);
-    servo_set_mircoseconds(5, 0);
-    servo_set_mircoseconds(6, 0);
-    servo_set_mircoseconds(7, 0);
+    servo_set_mircoseconds(4, 1000);
+    servo_set_mircoseconds(5, 1000);
+    servo_set_mircoseconds(6, 1000);
+    servo_set_mircoseconds(7, 1000);
 }
 
 void quad_set_setpoint(float rpy[3], float throtte)
 {
     memcpy(quad.setpoint, rpy, sizeof quad.setpoint);
-    quad.throtte = (throtte * 1000) + 1000;
+    quad.throtte = (throtte * 800) + 1100;
 }
 
 TASK(STACK_SIZE);

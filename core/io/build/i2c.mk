@@ -18,7 +18,6 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := i2c-mstr-dbg
 LOCAL_DEFINES := \
-	IO_I2C_PRESCALER=1 \
 	LOG_LEVEL=3
 
 LOCAL_EXPORT := \
@@ -48,7 +47,6 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := i2c-mstr
 LOCAL_DEFINES := \
-	IO_I2C_PRESCALER=1 \
 	RELEASE
 
 LOCAL_EXPORT := \
@@ -80,7 +78,6 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := i2c-slav-dbg
 LOCAL_DEFINES := \
-	IO_I2C_PRESCALER=1 \
 	LOG_LEVEL=3
 
 LOCAL_EXPORT := \

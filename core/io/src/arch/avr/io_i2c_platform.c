@@ -3,19 +3,9 @@
 
 void io_i2c_master_platform_init()
 {
-#if   IO_I2C_PRESCALER == 1
+    // setting 400KHz
     TWSR = 0;
-#elif IO_I2C_PRESCALER == 4
-    TWSR = _BV(TWPS0);
-#elif IO_I2C_PRESCALER == 16
-    TWSR = _BV(TWPS1);
-#elif IO_I2C_PRESCALER == 64
-    TWSR = _BV(TWPS1) | _BV(TWPS0);
-#else
-    #error "Invalid value of IO_I2C_PRESCALER"
-#endif
-
-    TWBR = 72;
+    TWBR = 12;
 }
 
 void io_i2c_slave_platform_init(uint8_t slave_addr)

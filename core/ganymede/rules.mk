@@ -17,8 +17,7 @@ COMMON_INC := $(LOCAL_PATH)/inc
 COMMON_API := $(LOCAL_PATH)/api
 
 COMMON_DEFINES := \
-	GANYMEDE \
-	GMD_WATCHDOG_ENABLED
+	GANYMEDE 
 
 
 include $(LOCAL_PATH)/build/debug.mk

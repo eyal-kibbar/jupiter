@@ -27,6 +27,23 @@ struct mpu_calib_s {
 };
 
 
+struct mpu_fifo_pkt_s {
+
+#ifdef MPU_SENSOR_ACCEL_ENABLED
+	int16_t accel[3];
+#endif
+
+#ifdef MPU_SENSOR_TEMP_ENABLED
+	int16_t temperature;
+#endif
+
+#ifdef MPU_SENSOR_GYRO_ENABLED
+	int16_t gyro[3];
+#endif
+
+} __attribute__((packed));
+
+
 struct mpu_calib_s mpu_calib;
 
 #if MPU_GYRO_FULL_SCALE_RANGE == 250
@@ -65,9 +82,6 @@ struct mpu_calib_s mpu_calib;
 
 
 static const struct mpu_reg_set_s mpu_init_cfg[] = {
-    {MPU_GYRO_CONFIG_ADDR,  (MPU_GYRO_CONFIG_FS_SEL_VAL << MPU_GYRO_CONFIG_FS_SEL_SHFT)},
-    {MPU_ACCEL_CONFIG_ADDR, (MPU_ACCEL_CONFIG_FS_SEL_VAL << MPU_ACCEL_CONFIG_AFS_SEL_SHFT)}, // set accel to +-2g
-
 
     {MPU_PWR_MGMT_1_ADDR, 0
       /*| (1 << MPU_PWR_MGMT_1_CYCLE_SHFT) // sleep between samples*/
@@ -75,8 +89,11 @@ static const struct mpu_reg_set_s mpu_init_cfg[] = {
       | 3 << MPU_PWR_MGMT_1_CLKSEL_SHFT
     }, // wake
 
+    {MPU_GYRO_CONFIG_ADDR,  (MPU_GYRO_CONFIG_FS_SEL_VAL << MPU_GYRO_CONFIG_FS_SEL_SHFT)},
+    {MPU_ACCEL_CONFIG_ADDR, (MPU_ACCEL_CONFIG_FS_SEL_VAL << MPU_ACCEL_CONFIG_AFS_SEL_SHFT)},
 
 
+    /*
     {MPU_PWR_MGMT_2_ADDR, 0
       | (0 << MPU_PWR_MGMT_2_STBY_XG_SHFT)
       | (0 << MPU_PWR_MGMT_2_STBY_YG_SHFT)
@@ -84,10 +101,11 @@ static const struct mpu_reg_set_s mpu_init_cfg[] = {
       | (0 << MPU_PWR_MGMT_2_LP_WAKE_CTRL_SHFT) // sampling rate 1.25 Hz
 
     },
+    */
 
     {MPU_CONFIG_ADDR, 0
       | (0x4 << MPU_CONFIG_EXT_SYNC_SET_SHFT) // set gyro Z as the clock source
-      | (0x5 << MPU_CONFIG_DLPF_CFG_SHFT) // set digital low pass filter
+      | (0x3 << MPU_CONFIG_DLPF_CFG_SHFT) // set digital low pass filter
     },
 
     {MPU_INT_PIN_CFG_ADDR, 0
@@ -97,8 +115,24 @@ static const struct mpu_reg_set_s mpu_init_cfg[] = {
     },
 
     {MPU_INT_ENABLE_ADDR, 0
-       //| (1 << MPU_INT_ENABLE_DATA_RDY_EN_SHFT)
+       | (1 << MPU_INT_ENABLE_DATA_RDY_EN_SHFT)
     }, // enable interrupt
+
+    {MPU_FIFO_EN_ADDR, 0
+#ifdef MPU_SENSOR_GYRO_ENABLED
+        | (1 << MPU_FIFO_EN_XG_FIFO_EN_SHFT)
+        | (1 << MPU_FIFO_EN_YG_FIFO_EN_SHFT)
+        | (1 << MPU_FIFO_EN_ZG_FIFO_EN_SHFT)
+#endif
+
+#ifdef MPU_SENSOR_ACCEL_ENABLED
+        | (1 << MPU_FIFO_EN_ACCEL_FIFO_EN_SHFT)
+#endif
+
+// TODO: enable temperature if needed
+    },
+
+    {MPU_SMPRT_DIV_ADDR, 249}, // set 4Hz sampling rate
 };
 
 
@@ -132,10 +166,27 @@ static uint8_t mpu_regread(uint8_t addr)
     return val;
 }
 
+static uint16_t mpu_regread16(uint8_t addr)
+{
+    uint16_t val;
+
+    io_tx_t tx[2] = {
+        { .mode = IO_TX_MODE_W, .buf = &addr, .len = 1, .off = 0 },
+        { .mode = IO_TX_MODE_R, .buf = (uint8_t*)&val,  .len = 2, .off = 0 }
+    };
+
+    io_i2c_tx_begin(MPU_ADDR);
+    io_i2c_master_sg(tx, 2, 0);
+    io_i2c_tx_end();
+    return val;
+}
+
 static void mpu_reset()
 {
     mpu_regwrite(MPU_PWR_MGMT_1_ADDR, 1 << MPU_PWR_MGMT_1_RESET_SHFT);
+
     gmd_delay(100);
+
 }
 
 void mpu_raw_read(mpu_rawdata_t* rawdata)
@@ -201,9 +252,20 @@ void mpu_init()
     uint8_t mpu_addr = 0;
 
     mpu_reset();
+
+    //mpu_reset();
+
+
+
     for (i=0; i < ARR_SIZE(mpu_init_cfg); ++i) {
         mpu_regwrite(mpu_init_cfg[i].addr, mpu_init_cfg[i].val);
     }
+
+
+
+    //mpu_regwrite(MPU_USER_CTRL_ADDR, MPU_USER_CTRL_FIFO_RESET_BMSK);
+    mpu_regwrite(MPU_USER_CTRL_ADDR, MPU_USER_CTRL_FIFO_EN_BMSK | MPU_USER_CTRL_FIFO_RESET_BMSK);
+
 
     // sanity
     mpu_addr = mpu_regread(MPU_WHO_AM_I_ADDR);
@@ -263,4 +325,54 @@ void mpu_calibrate()
         gyro_err[1],
         gyro_err[2]);
 
+}
+
+    struct mpu_fifo_pkt_s buff[6];
+
+int mpu_pipe_read(mpu_rawdata_t* rawdata_arr, uint8_t* sz)
+{
+    uint16_t fifo_sz;
+    uint8_t available;
+    uint8_t max_sz = *sz;
+    uint8_t i;
+    uint8_t addr = MPU_FIFO_R_W_ADDR;
+    // use provided buffer end. mpu_rawdata_t size is always larger or equal to mpu_fifo_pkt_s size
+    //struct mpu_fifo_pkt_s* buff = (struct mpu_fifo_pkt_s*)(((uint8_t*)rawdata_arr) + (max_sz) * (sizeof(mpu_rawdata_t) - sizeof(struct mpu_fifo_pkt_s)));
+
+
+    io_tx_t tx[2] = {
+        { .mode = IO_TX_MODE_W, .buf = &addr,          .len = 1,            .off = 0 },
+        { .mode = IO_TX_MODE_R, .buf = (uint8_t*)buff, .len = 0, .off = 0 }
+    };
+
+    fifo_sz = mpu_regread16(MPU_FIFO_COUNT_ADDR);
+
+    fifo_sz = (int16_t)ntohs(fifo_sz);
+
+    if (0 == fifo_sz) {
+        return 0;
+    }
+
+    available = (uint8_t)(fifo_sz / sizeof(struct mpu_fifo_pkt_s));
+    *sz = MIN(available, max_sz);
+    tx[1].len = (*sz) * sizeof(struct mpu_fifo_pkt_s);
+
+    io_i2c_tx_begin(MPU_ADDR);
+    io_i2c_master_sg(tx, 2, 0);
+    io_i2c_tx_end();
+
+    for (i=0; i < (*sz); ++i) {
+
+        rawdata_arr[i].accel[0] = ntohs(buff[i].accel[0]);
+        rawdata_arr[i].accel[1] = ntohs(buff[i].accel[1]);
+        rawdata_arr[i].accel[2] = ntohs(buff[i].accel[2]);
+
+        //rawdata_arr[i].temperature = ntohs(buff[i].temperature);
+
+        rawdata_arr[i].gyro[0] = ntohs(buff[i].gyro[0]);
+        rawdata_arr[i].gyro[1] = ntohs(buff[i].gyro[1]);
+        rawdata_arr[i].gyro[2] = ntohs(buff[i].gyro[2]);
+    }
+
+    return !!(available - (*sz));
 }

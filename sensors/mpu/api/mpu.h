@@ -16,8 +16,8 @@ typedef struct mpu_data_s {
 
 typedef struct mpu_rawdata_s {
 	int16_t accel[3];
-	int16_t gyro[3];
 	int16_t temperature;
+	int16_t gyro[3];
 } mpu_rawdata_t;
 
 void mpu_init();
@@ -28,5 +28,7 @@ void mpu_read(mpu_data_t* data);
 void mpu_raw_read(mpu_rawdata_t* rawdata);
 void mpu_raw_parse(const mpu_rawdata_t* rawdata, mpu_data_t* data);
 void mpu_calibrate();
+
+int mpu_pipe_read(mpu_rawdata_t* rawdata_arr, uint8_t* sz);
 
 #endif /* MPU_H */

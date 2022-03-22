@@ -26,7 +26,7 @@ void init()
     TCNT1H = 0;
     TCNT1L = 0;
 
-    //mpu_calibrate();
+    mpu_calibrate();
 }
 
 static float calc_angle(float x,float z)
@@ -47,24 +47,36 @@ int16_t prev_gyro[3];
 
 mpu_rawdata_t raw_data[6];
 
+
+
 void loop()
 {
-    uint8_t i;
-    uint8_t sz = ARR_SIZE(raw_data);
-    mpu_pipe_read(raw_data, &sz);
+    float yaw, pitch, roll;
+    mpu_ypr(&yaw, &pitch, &roll);
+    LOG_INFO(MPU_TEST, "(%03.02f, %03.02f, %03.02f)", yaw, pitch, roll);
+    gmd_delay(100);
+}
 
-    for (i=0; i < sz; ++i) {
-        mpu_data_t data;
-        mpu_raw_parse(&raw_data[i], &data);
-        LOG_INFO(MPU_TEST, "i:%d gz:%f az:%f", i, data.gyro[2], data.accel[2]);
-    }
+#if 0
 
+void loop()
+{
+    uint8_t i, available;
+    uint8_t sz;
+    do {
+        available = mpu_pipe_read(raw_data, &sz);
+        sz = ARR_SIZE(raw_data);
+        for (i=0; i < sz ; ++i) {
+            mpu_data_t data;
+            mpu_raw_parse(&raw_data[i], &data);
+            LOG_INFO(MPU_TEST, "i:%d gz:%f az:%f", i, data.gyro[0], data.accel[2]);
+        }
+    } while (available);
 
-    gmd_delay(1000);
+    gmd_delay(100);
 }
 
 
-#if 0
 char s[50];
 void loop()
 {

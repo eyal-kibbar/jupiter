@@ -14,7 +14,10 @@
 #define MPU_TEMPERATURE_OFFSET (0)
 #define MPU_TEMPERATURE_SCALE (340)
 
-#define MPU_CALIBRATION_FACTOR 200
+#define MPU_CALIBRATION_FACTOR 64
+
+#define MPU_SAMPLING_FREQ_Hz 50
+#define MPU_SAMPLING_T_SEC (1.0/MPU_SAMPLING_FREQ_Hz)
 
 struct mpu_reg_set_s {
     uint8_t addr;
@@ -132,7 +135,7 @@ static const struct mpu_reg_set_s mpu_init_cfg[] = {
 // TODO: enable temperature if needed
     },
 
-    {MPU_SMPRT_DIV_ADDR, 249}, // set 4Hz sampling rate
+    {MPU_SMPRT_DIV_ADDR, (1000 / MPU_SAMPLING_FREQ_Hz) - 1}, // set sampling rate
 };
 
 
@@ -233,8 +236,8 @@ void mpu_raw_parse(const mpu_rawdata_t* rawdata, mpu_data_t* data)
     data->temperature = 36.53f + (rawdata->temperature - MPU_TEMPERATURE_OFFSET) / ((float)MPU_TEMPERATURE_SCALE);
 
     for (i=0; i < ARR_SIZE(data->gyro); ++i) {
-        data->gyro[i] = rawdata->gyro[i] * MPU_GYRO_COEF;
-        //data->gyro[i] = (rawdata->gyro[i]-mpu_calib.gyro_err[i]) * MPU_GYRO_COEF;
+        //data->gyro[i] = rawdata->gyro[i] * MPU_GYRO_COEF;
+        data->gyro[i] = (rawdata->gyro[i]-mpu_calib.gyro_err[i]) * MPU_GYRO_COEF;
     }
 }
 
@@ -293,56 +296,64 @@ uint8_t mpu_get_status()
 
 void mpu_calibrate()
 {
-    uint8_t i, j;
-    mpu_rawdata_t rawdata;
-    int32_t gyro_err[ARR_SIZE(rawdata.gyro)];
+    mpu_rawdata_t rawdata[4];
+    uint8_t batch_idx, axis, sz;
+    uint16_t sample_cnt;
+    int32_t gyro_err[ARR_SIZE(rawdata[0].gyro)];
 
     LOG_INFO(MPU, "calibrating");
+
+    //mpu_regwrite(MPU_USER_CTRL_ADDR, MPU_USER_CTRL_FIFO_RESET_BMSK);
+
 
     memset(&mpu_calib, 0, sizeof(mpu_calib));
     memset(gyro_err, 0, sizeof(gyro_err));
 
-    for (j=0; j < MPU_CALIBRATION_FACTOR; ++j) {
-
-        // wait for data to be ready
-        for (i=0; 0 == mpu_get_status(); ++i);
-
-        // acumulate error, assuming the sensor is not moving
-        mpu_raw_read(&rawdata);
-        for (i=0; i < ARR_SIZE(gyro_err); ++i) {
-            gyro_err[i] += (int32_t)rawdata.gyro[i];
+    for (sample_cnt=0; sample_cnt < MPU_CALIBRATION_FACTOR;) {
+        sz = MIN(ARR_SIZE(rawdata), MPU_CALIBRATION_FACTOR - sample_cnt);
+        mpu_pipe_read(rawdata, &sz);
+        if (sz == 0) {
+            //LOG_INFO(MPU, "waiting %d", sample_cnt);
+            gmd_delay(50);
+            continue;
         }
+        for (batch_idx=0; batch_idx < sz; ++batch_idx) {
+            for (axis=0; axis < ARR_SIZE(gyro_err); ++axis) {
+                gyro_err[axis] += (int32_t)rawdata[batch_idx].gyro[axis];
+            }
+        }
+        sample_cnt += (uint16_t)sz;
     }
 
-    // calculate error average over all the collected samples
-    for (i=0; i < ARR_SIZE(gyro_err); ++i) {
-        //mpu_calib.gyro_err[i] = ((float)gyro_err[i]) / MPU_CALIBRATION_FACTOR;
-        mpu_calib.gyro_err[i] = (int16_t)(gyro_err[i] / MPU_CALIBRATION_FACTOR);
+    for (axis=0; axis < ARR_SIZE(gyro_err); ++axis) {
+        mpu_calib.gyro_err[axis] = (int16_t)(gyro_err[axis] / MPU_CALIBRATION_FACTOR);
     }
 
-    LOG_INFO(MPU, "calibration done: %d %d %d",
-        gyro_err[0],
-        gyro_err[1],
-        gyro_err[2]);
+    //gmd_delay(2000);
+    {
+        uint8_t status = mpu_get_status();
+        LOG_INFO(MPU, "%02x", status);
+        /*
+        LOG_INFO(MPU, "calibration done: %d %d %d",
+            gyro_err[0],
+            gyro_err[1],
+            gyro_err[2]);
+            */
+    }
+
 
 }
 
-    struct mpu_fifo_pkt_s buff[6];
-
-int mpu_pipe_read(mpu_rawdata_t* rawdata_arr, uint8_t* sz)
+static uint8_t mpu_pipe_read_aux(struct mpu_fifo_pkt_s *pkt_arr, uint8_t *sz)
 {
     uint16_t fifo_sz;
     uint8_t available;
-    uint8_t max_sz = *sz;
-    uint8_t i;
     uint8_t addr = MPU_FIFO_R_W_ADDR;
-    // use provided buffer end. mpu_rawdata_t size is always larger or equal to mpu_fifo_pkt_s size
-    //struct mpu_fifo_pkt_s* buff = (struct mpu_fifo_pkt_s*)(((uint8_t*)rawdata_arr) + (max_sz) * (sizeof(mpu_rawdata_t) - sizeof(struct mpu_fifo_pkt_s)));
 
 
     io_tx_t tx[2] = {
-        { .mode = IO_TX_MODE_W, .buf = &addr,          .len = 1,            .off = 0 },
-        { .mode = IO_TX_MODE_R, .buf = (uint8_t*)buff, .len = 0, .off = 0 }
+        { .mode = IO_TX_MODE_W, .buf = &addr,             .len = 1, .off = 0 },
+        { .mode = IO_TX_MODE_R, .buf = (uint8_t*)pkt_arr, .len = 0, .off = 0 }
     };
 
     fifo_sz = mpu_regread16(MPU_FIFO_COUNT_ADDR);
@@ -350,17 +361,29 @@ int mpu_pipe_read(mpu_rawdata_t* rawdata_arr, uint8_t* sz)
     fifo_sz = (int16_t)ntohs(fifo_sz);
 
     if (0 == fifo_sz) {
+        *sz = 0;
         return 0;
     }
 
     available = (uint8_t)(fifo_sz / sizeof(struct mpu_fifo_pkt_s));
-    *sz = MIN(available, max_sz);
+    *sz = MIN(available, *sz);
     tx[1].len = (*sz) * sizeof(struct mpu_fifo_pkt_s);
 
     io_i2c_tx_begin(MPU_ADDR);
     io_i2c_master_sg(tx, 2, 0);
     io_i2c_tx_end();
 
+    return (available - (*sz));
+}
+
+uint8_t mpu_pipe_read(mpu_rawdata_t* rawdata_arr, uint8_t* sz)
+{
+    uint8_t i, available;
+    // use provided buffer end. mpu_rawdata_t size is always larger or equal to mpu_fifo_pkt_s size
+    COMPILER_CHECK(sizeof(struct mpu_fifo_pkt_s) <= sizeof(struct mpu_fifo_pkt_s));
+    struct mpu_fifo_pkt_s* buff = (struct mpu_fifo_pkt_s*)(((uint8_t*)rawdata_arr) + (*sz) * (sizeof(mpu_rawdata_t) - sizeof(struct mpu_fifo_pkt_s)));
+
+    available = mpu_pipe_read_aux(buff, sz);
     for (i=0; i < (*sz); ++i) {
 
         rawdata_arr[i].accel[0] = ntohs(buff[i].accel[0]);
@@ -374,5 +397,54 @@ int mpu_pipe_read(mpu_rawdata_t* rawdata_arr, uint8_t* sz)
         rawdata_arr[i].gyro[2] = ntohs(buff[i].gyro[2]);
     }
 
-    return !!(available - (*sz));
+    return available;
+}
+
+#define MPU_ANGLE_FILTER_ALPHA 0.98
+
+float angles[3];
+
+void mpu_ypr(float* yaw, float* pitch, float* roll)
+{
+    mpu_rawdata_t rawdata[4];
+    mpu_data_t data;
+    uint8_t batch_idx, sz;
+    uint8_t available;
+    uint16_t sample_cnt;
+    float accel_angles[3];
+    float gyro_angles[3];
+    float yaw_sin;
+
+    do {
+        sz = ARR_SIZE(rawdata);
+        available = mpu_pipe_read(rawdata, &sz);
+
+        for (batch_idx=0; batch_idx < sz; ++batch_idx) {
+            mpu_raw_parse(&rawdata[batch_idx], &data);
+
+            accel_angles[0] = atan2(data.accel[1], data.accel[2]) * (180 / M_PI);
+            accel_angles[1] = atan2(data.accel[0], data.accel[2]) * (180 / M_PI);
+
+            gyro_angles[0] =  data.gyro[0] * MPU_SAMPLING_T_SEC;
+            gyro_angles[1] = -data.gyro[1] * MPU_SAMPLING_T_SEC;
+            gyro_angles[2] =  data.gyro[2] * MPU_SAMPLING_T_SEC;
+
+            yaw_sin = sin(gyro_angles[2] * (M_PI/180));
+
+
+            *pitch = angles[0];
+            *roll = angles[1];
+            angles[0] = (angles[0] + gyro_angles[0]) - ((*roll) * yaw_sin);
+            angles[1] = (angles[1] + gyro_angles[1]) + ((*pitch) * yaw_sin);
+
+            // apply complementary filter for pitch and roll
+            angles[0] = (MPU_ANGLE_FILTER_ALPHA * angles[0]) + ((1-MPU_ANGLE_FILTER_ALPHA) * accel_angles[0]);
+            angles[1] = (MPU_ANGLE_FILTER_ALPHA * angles[1]) + ((1-MPU_ANGLE_FILTER_ALPHA) * accel_angles[1]);
+            angles[2] = angles[2] + gyro_angles[2]; // use only gyro for yaw
+        }
+    } while (available);
+
+    *pitch = angles[0];
+    *roll = angles[1];
+    *yaw = angles[2];
 }

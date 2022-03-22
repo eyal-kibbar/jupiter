@@ -29,6 +29,9 @@ void mpu_raw_read(mpu_rawdata_t* rawdata);
 void mpu_raw_parse(const mpu_rawdata_t* rawdata, mpu_data_t* data);
 void mpu_calibrate();
 
-int mpu_pipe_read(mpu_rawdata_t* rawdata_arr, uint8_t* sz);
+uint8_t mpu_pipe_read(mpu_rawdata_t* rawdata_arr, uint8_t* sz);
+
+
+void mpu_ypr(float* yaw, float* pitch, float* roll);
 
 #endif /* MPU_H */

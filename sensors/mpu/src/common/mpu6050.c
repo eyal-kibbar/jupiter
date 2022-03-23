@@ -14,9 +14,16 @@
 #define MPU_TEMPERATURE_OFFSET (0)
 #define MPU_TEMPERATURE_SCALE (340)
 
-#define MPU_CALIBRATION_FACTOR 64
+#define MPU_CALIBRATION_FACTOR 1024
 
-#define MPU_SAMPLING_FREQ_Hz 50
+#ifndef MPU_SAMPLING_FREQ_Hz
+#define MPU_SAMPLING_FREQ_Hz 100
+#endif
+
+#ifndef MPU_ANGLE_FILTER_ALPHA
+#define MPU_ANGLE_FILTER_ALPHA 0.98
+#endif
+
 #define MPU_SAMPLING_T_SEC (1.0/MPU_SAMPLING_FREQ_Hz)
 
 struct mpu_reg_set_s {
@@ -24,9 +31,8 @@ struct mpu_reg_set_s {
     uint8_t val;
 };
 
-struct mpu_calib_s {
-    //float gyro_err[3];
-    int16_t gyro_err[3];
+struct mpu_s {
+    float angles[3];
 };
 
 
@@ -48,6 +54,8 @@ struct mpu_fifo_pkt_s {
 
 
 struct mpu_calib_s mpu_calib;
+struct mpu_s mpu;
+
 
 #if MPU_GYRO_FULL_SCALE_RANGE == 250
     #define MPU_GYRO_CONFIG_FS_SEL_VAL 0
@@ -111,11 +119,13 @@ static const struct mpu_reg_set_s mpu_init_cfg[] = {
       | (0x3 << MPU_CONFIG_DLPF_CFG_SHFT) // set digital low pass filter
     },
 
+    /*
     {MPU_INT_PIN_CFG_ADDR, 0
       //| (1 << MPU_INT_PIN_CFG_LATCH_INT_EN_SHFT)
       //| (1 << MPU_INT_PIN_CFG_INT_OPEN_SHFT)
       //| (1 << MPU_INT_PIN_CFG_INT_LEVEL_SHFT)
     },
+    */
 
     {MPU_INT_ENABLE_ADDR, 0
        | (1 << MPU_INT_ENABLE_DATA_RDY_EN_SHFT)
@@ -233,7 +243,9 @@ void mpu_raw_parse(const mpu_rawdata_t* rawdata, mpu_data_t* data)
         data->accel[i] = rawdata->accel[i] * MPU_ACCEL_COEF;
     }
 
+#ifdef MPU_SENSOR_TEMP_ENABLED
     data->temperature = 36.53f + (rawdata->temperature - MPU_TEMPERATURE_OFFSET) / ((float)MPU_TEMPERATURE_SCALE);
+#endif
 
     for (i=0; i < ARR_SIZE(data->gyro); ++i) {
         //data->gyro[i] = rawdata->gyro[i] * MPU_GYRO_COEF;
@@ -256,18 +268,14 @@ void mpu_init()
 
     mpu_reset();
 
-    //mpu_reset();
-
-
-
     for (i=0; i < ARR_SIZE(mpu_init_cfg); ++i) {
         mpu_regwrite(mpu_init_cfg[i].addr, mpu_init_cfg[i].val);
     }
 
 
 
-    //mpu_regwrite(MPU_USER_CTRL_ADDR, MPU_USER_CTRL_FIFO_RESET_BMSK);
-    mpu_regwrite(MPU_USER_CTRL_ADDR, MPU_USER_CTRL_FIFO_EN_BMSK | MPU_USER_CTRL_FIFO_RESET_BMSK);
+    mpu_regwrite(MPU_USER_CTRL_ADDR, MPU_USER_CTRL_FIFO_RESET_BMSK);
+    mpu_regwrite(MPU_USER_CTRL_ADDR, MPU_USER_CTRL_FIFO_EN_BMSK);
 
 
     // sanity
@@ -300,10 +308,9 @@ void mpu_calibrate()
     uint8_t batch_idx, axis, sz;
     uint16_t sample_cnt;
     int32_t gyro_err[ARR_SIZE(rawdata[0].gyro)];
+    uint8_t status;
 
     LOG_INFO(MPU, "calibrating");
-
-    //mpu_regwrite(MPU_USER_CTRL_ADDR, MPU_USER_CTRL_FIFO_RESET_BMSK);
 
 
     memset(&mpu_calib, 0, sizeof(mpu_calib));
@@ -312,6 +319,7 @@ void mpu_calibrate()
     for (sample_cnt=0; sample_cnt < MPU_CALIBRATION_FACTOR;) {
         sz = MIN(ARR_SIZE(rawdata), MPU_CALIBRATION_FACTOR - sample_cnt);
         mpu_pipe_read(rawdata, &sz);
+
         if (sz == 0) {
             //LOG_INFO(MPU, "waiting %d", sample_cnt);
             gmd_delay(50);
@@ -329,22 +337,11 @@ void mpu_calibrate()
         mpu_calib.gyro_err[axis] = (int16_t)(gyro_err[axis] / MPU_CALIBRATION_FACTOR);
     }
 
-    //gmd_delay(2000);
-    {
-        uint8_t status = mpu_get_status();
-        LOG_INFO(MPU, "%02x", status);
-        /*
-        LOG_INFO(MPU, "calibration done: %d %d %d",
-            gyro_err[0],
-            gyro_err[1],
-            gyro_err[2]);
-            */
-    }
-
-
+    status = mpu_get_status();
+    LOG_INFO(MPU, "status: %02x", status);
 }
 
-static uint8_t mpu_pipe_read_aux(struct mpu_fifo_pkt_s *pkt_arr, uint8_t *sz)
+static void mpu_pipe_read_aux(struct mpu_fifo_pkt_s *pkt_arr, uint8_t *sz)
 {
     uint16_t fifo_sz;
     uint8_t available;
@@ -357,12 +354,11 @@ static uint8_t mpu_pipe_read_aux(struct mpu_fifo_pkt_s *pkt_arr, uint8_t *sz)
     };
 
     fifo_sz = mpu_regread16(MPU_FIFO_COUNT_ADDR);
-
     fifo_sz = (int16_t)ntohs(fifo_sz);
 
     if (0 == fifo_sz) {
         *sz = 0;
-        return 0;
+        return;
     }
 
     available = (uint8_t)(fifo_sz / sizeof(struct mpu_fifo_pkt_s));
@@ -372,54 +368,46 @@ static uint8_t mpu_pipe_read_aux(struct mpu_fifo_pkt_s *pkt_arr, uint8_t *sz)
     io_i2c_tx_begin(MPU_ADDR);
     io_i2c_master_sg(tx, 2, 0);
     io_i2c_tx_end();
-
-    return (available - (*sz));
 }
 
-uint8_t mpu_pipe_read(mpu_rawdata_t* rawdata_arr, uint8_t* sz)
+void mpu_pipe_read(mpu_rawdata_t* rawdata_arr, uint8_t* sz)
 {
-    uint8_t i, available;
+    uint8_t i;
     // use provided buffer end. mpu_rawdata_t size is always larger or equal to mpu_fifo_pkt_s size
     COMPILER_CHECK(sizeof(struct mpu_fifo_pkt_s) <= sizeof(struct mpu_fifo_pkt_s));
     struct mpu_fifo_pkt_s* buff = (struct mpu_fifo_pkt_s*)(((uint8_t*)rawdata_arr) + (*sz) * (sizeof(mpu_rawdata_t) - sizeof(struct mpu_fifo_pkt_s)));
 
-    available = mpu_pipe_read_aux(buff, sz);
+    mpu_pipe_read_aux(buff, sz);
     for (i=0; i < (*sz); ++i) {
 
         rawdata_arr[i].accel[0] = ntohs(buff[i].accel[0]);
         rawdata_arr[i].accel[1] = ntohs(buff[i].accel[1]);
         rawdata_arr[i].accel[2] = ntohs(buff[i].accel[2]);
 
-        //rawdata_arr[i].temperature = ntohs(buff[i].temperature);
-
+#ifdef MPU_SENSOR_TEMP_ENABLED
+        rawdata_arr[i].temperature = ntohs(buff[i].temperature);
+#endif
         rawdata_arr[i].gyro[0] = ntohs(buff[i].gyro[0]);
         rawdata_arr[i].gyro[1] = ntohs(buff[i].gyro[1]);
         rawdata_arr[i].gyro[2] = ntohs(buff[i].gyro[2]);
     }
-
-    return available;
 }
 
-#define MPU_ANGLE_FILTER_ALPHA 0.98
-
-float angles[3];
-
-void mpu_ypr(float* yaw, float* pitch, float* roll)
+void mpu_ypr(float ypr[3])
 {
     mpu_rawdata_t rawdata[4];
     mpu_data_t data;
     uint8_t batch_idx, sz;
-    uint8_t available;
     uint16_t sample_cnt;
     float accel_angles[3];
     float gyro_angles[3];
-    float yaw_sin;
+    float yaw_sin, pitch, roll;
 
     do {
         sz = ARR_SIZE(rawdata);
-        available = mpu_pipe_read(rawdata, &sz);
-
+        mpu_pipe_read(rawdata, &sz);
         for (batch_idx=0; batch_idx < sz; ++batch_idx) {
+
             mpu_raw_parse(&rawdata[batch_idx], &data);
 
             accel_angles[0] = atan2(data.accel[1], data.accel[2]) * (180 / M_PI);
@@ -430,21 +418,24 @@ void mpu_ypr(float* yaw, float* pitch, float* roll)
             gyro_angles[2] =  data.gyro[2] * MPU_SAMPLING_T_SEC;
 
             yaw_sin = sin(gyro_angles[2] * (M_PI/180));
-
-
-            *pitch = angles[0];
-            *roll = angles[1];
-            angles[0] = (angles[0] + gyro_angles[0]) - ((*roll) * yaw_sin);
-            angles[1] = (angles[1] + gyro_angles[1]) + ((*pitch) * yaw_sin);
+            pitch = mpu.angles[0];
+            roll = mpu.angles[1];
+            mpu.angles[0] = (mpu.angles[0] + gyro_angles[0]) - (roll * yaw_sin);
+            mpu.angles[1] = (mpu.angles[1] + gyro_angles[1]) + (pitch * yaw_sin);
 
             // apply complementary filter for pitch and roll
-            angles[0] = (MPU_ANGLE_FILTER_ALPHA * angles[0]) + ((1-MPU_ANGLE_FILTER_ALPHA) * accel_angles[0]);
-            angles[1] = (MPU_ANGLE_FILTER_ALPHA * angles[1]) + ((1-MPU_ANGLE_FILTER_ALPHA) * accel_angles[1]);
-            angles[2] = angles[2] + gyro_angles[2]; // use only gyro for yaw
-        }
-    } while (available);
+            mpu.angles[0] = (MPU_ANGLE_FILTER_ALPHA * mpu.angles[0]) + ((1-MPU_ANGLE_FILTER_ALPHA) * accel_angles[0]);
+            mpu.angles[1] = (MPU_ANGLE_FILTER_ALPHA * mpu.angles[1]) + ((1-MPU_ANGLE_FILTER_ALPHA) * accel_angles[1]);
+            mpu.angles[2] = mpu.angles[2] + gyro_angles[2]; // use only gyro for yaw
 
-    *pitch = angles[0];
-    *roll = angles[1];
-    *yaw = angles[2];
+            // since yaw angle is only controled by gyro angles, it may drift beyond -180 - 180 degrees range
+            if (mpu.angles[2] < -180) mpu.angles[2] += 360;
+            else if (mpu.angles[2] > 180) mpu.angles[2] -= 360;
+        }
+
+    } while (sz > 0);
+
+    ypr[1] = mpu.angles[0];
+    ypr[2] = mpu.angles[1];
+    ypr[0] = mpu.angles[2];
 }

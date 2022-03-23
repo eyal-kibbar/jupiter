@@ -127,14 +127,12 @@ void io_i2c_tx_end()
 void io_i2c_master_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
 {
     platform_cli();
-
     io_i2c.tx = tx;
     io_i2c.num = n;
     io_i2c.is_done = 0;
+    platform_sei();
 
     twi_send_start();
 
     gmd_wfe(&io_i2c.is_done, 0xFF, 0, timeout_ms);
-
-    platform_sei();
 }

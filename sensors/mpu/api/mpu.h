@@ -13,6 +13,9 @@ typedef struct mpu_data_s {
 	float temperature;
 } mpu_data_t;
 
+struct mpu_calib_s {
+    int16_t gyro_err[3];
+};
 
 typedef struct mpu_rawdata_s {
 	int16_t accel[3];
@@ -29,9 +32,9 @@ void mpu_raw_read(mpu_rawdata_t* rawdata);
 void mpu_raw_parse(const mpu_rawdata_t* rawdata, mpu_data_t* data);
 void mpu_calibrate();
 
-uint8_t mpu_pipe_read(mpu_rawdata_t* rawdata_arr, uint8_t* sz);
+void mpu_pipe_read(mpu_rawdata_t* rawdata_arr, uint8_t* sz);
 
 
-void mpu_ypr(float* yaw, float* pitch, float* roll);
+void mpu_ypr(float ypr[3]);
 
 #endif /* MPU_H */

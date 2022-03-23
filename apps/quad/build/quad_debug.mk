@@ -39,7 +39,7 @@ LOCAL_MODULE := quad-dbg
 
 LOCAL_DEFINES := \
 	STACK_SIZE=512 \
-	LOG_LEVEL=0
+	LOG_LEVEL=3
 
 LOCAL_EXPORT := $(LOCAL_PATH)/api
 
@@ -116,7 +116,7 @@ LOCAL_STATIC_LIBS := \
 	mpu-dbg \
 	i2c-mstr \
 	spi \
-	nRF24L01 \
+	nRF24L01-dbg \
 	uart \
 	logging \
 	failsafe \

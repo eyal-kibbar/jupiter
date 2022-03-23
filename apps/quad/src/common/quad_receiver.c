@@ -35,7 +35,9 @@ void init()
 
 float map(float v, float vmin, float vmax, float omin, float omax)
 {
-    return ((v * (omax - omin)) / (vmax - vmin)) + omin;
+    float a = (omax - omin) / (vmax - vmin);
+    float b = omax - a * vmax;
+    return (v * a) + b;
 }
 
 extern struct quad_s quad;
@@ -66,6 +68,7 @@ void loop()
     //LOG_INFO(RADIO_RX, "receiving");
     if ((rc = nrf_recv((uint8_t*)&pkt, &payload_len, &pipe_idx))) {
         quad_stop(); // stop the quad if we failed to reveice a packet
+        return;
     }
 
     if (pkt.switches & 0x1) {

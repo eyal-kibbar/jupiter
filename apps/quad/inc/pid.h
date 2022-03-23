@@ -14,6 +14,6 @@ typedef struct pid_state_s {
     float error_integral;
 } pid_state_t;
 
-float pid_step(pid_config_t* cfg, pid_state_t* state, float input, float dt, float setpoint);
+float pid_step(pid_config_t* cfg, pid_state_t* state, float input, float setpoint);
 
 #endif /* PID_H_ */

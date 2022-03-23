@@ -21,7 +21,7 @@ LOCAL_INC := \
 LOCAL_EXPORT := $(LOCAL_PATH)/api
 
 LOCAL_STATIC_LIBS := \
-	ganymede-dbg
+	ganymede
 
 LOCAL_CFLAGS := -O3
 

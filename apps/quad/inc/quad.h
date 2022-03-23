@@ -27,6 +27,8 @@ struct quad_s {
     pid_state_t pid_roll_state;
     pid_state_t pid_pitch_state;
     pid_state_t pid_yaw_state;
+
+    uint8_t pid_update;
 };
 
 

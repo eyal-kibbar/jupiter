@@ -1,13 +1,13 @@
 #include "pid.h"
 #include "utils.h"
 
-float pid_step(pid_config_t* cfg, pid_state_t* state, float input, float dt, float setpoint)
+float pid_step(pid_config_t* cfg, pid_state_t* state, float input, float setpoint)
 {
     float output;
     float error = input - setpoint;
-    float d_input = (error - state->prev_error) / dt;
+    float d_input = (error - state->prev_error);
 
-    state->error_integral += error * dt;
+    state->error_integral += error;
     state->error_integral = MIN(cfg->output_limit, state->error_integral);
     state->error_integral = MAX(-cfg->output_limit, state->error_integral);
 

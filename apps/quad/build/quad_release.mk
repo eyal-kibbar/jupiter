@@ -61,7 +61,7 @@ LOCAL_STATIC_LIBS := \
 	i2c-mstr \
 	logging \
 	failsafe \
-	servo \
+	servo-250 \
 	ganymede \
 
 LOCAL_CFLAGS := -O3
@@ -81,7 +81,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := quad-receiver
 
 LOCAL_DEFINES := \
-	STACK_SIZE=256 \
+	STACK_SIZE=512 \
 	LOG_LEVEL=0
 
 LOCAL_EXPORT := $(LOCAL_PATH)/api
@@ -127,7 +127,7 @@ LOCAL_STATIC_LIBS := \
 	nRF24L01 \
 	logging \
 	failsafe \
-	servo \
+	servo-250 \
 	io \
 	ganymede \
 

@@ -4,12 +4,12 @@
 #include "servo_platform.h"
 #include "logging.h"
 
-#define SERVO_MIN_ISR_US 20
+#define SERVO_MIN_ISR_US 10
 #define SERVO_MIN_CYCLE_ISR_US 50
 
 struct servo_pin_s {
-    uint8_t  pin;
-    uint16_t microseconds;
+    uint16_t pin : 4;
+    uint16_t microseconds : 12;
 };
 
 struct servo_update_s {
@@ -55,21 +55,22 @@ void servo_attach(uint8_t pin)
 
 void servo_set_mircoseconds(uint8_t pin, uint16_t microseconds)
 {
-    int i, j;
+    uint8_t i, j;
 
-    platform_cli();
+    // find the pin to be updated
     for (i=0; i < servo.num_pins && servo.pins[i].pin != pin; ++i);
 
     if (microseconds == servo.pins[i].microseconds) {
         // no need to update
-        platform_sei();
         return;
     }
+
+    platform_cli();
     if (0 != microseconds) {
         servo.non_zero |= 1 << i;
     }
     else {
-        servo.non_zero &= ~(1 <<i);
+        servo.non_zero &= ~(1 << i);
     }
 
     servo.pins[i].microseconds = microseconds;

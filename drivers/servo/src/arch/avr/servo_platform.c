@@ -7,7 +7,6 @@
 #include "logging.h"
 
 #define SERVO_CLK_PRESCALER 8
-#define SERVO_CYCLE_FREQ 50
 
 void servo_platform_init()
 {

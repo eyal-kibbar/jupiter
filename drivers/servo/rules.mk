@@ -6,7 +6,7 @@ COMMON_INC := $(LOCAL_PATH)/inc
 
 COMMON_DEFINES := \
 	SERVO \
-	SERVO_MAX_PIN=16
+	SERVO_MAX_PIN=8
 
 
 include $(LOCAL_PATH)/build/debug.mk

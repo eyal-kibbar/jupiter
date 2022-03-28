@@ -39,7 +39,8 @@ LOCAL_MODULE := quad-dbg
 
 LOCAL_DEFINES := \
 	STACK_SIZE=512 \
-	LOG_LEVEL=3
+	LOG_LEVEL=3 \
+	DEBUG
 
 LOCAL_EXPORT := $(LOCAL_PATH)/api
 
@@ -58,7 +59,7 @@ LOCAL_STATIC_LIBS := \
 	uart-dbg \
 	logging \
 	failsafe \
-	servo-dbg \
+	servo-dbg-250 \
 	ganymede-dbg \
 
 LOCAL_TARGET := atmega168
@@ -76,7 +77,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := quad-receiver-dbg
 
 LOCAL_DEFINES := \
-	STACK_SIZE=256 \
+	STACK_SIZE=512 \
 	LOG_LEVEL=3
 
 LOCAL_EXPORT := $(LOCAL_PATH)/api
@@ -113,19 +114,21 @@ LOCAL_DEFINES :=
 
 LOCAL_STATIC_LIBS := \
 	pid-dbg \
-	mpu-dbg \
+	mpu \
 	i2c-mstr \
 	spi \
-	nRF24L01-dbg \
+	nRF24L01 \
 	uart \
 	logging \
 	failsafe \
-	servo \
+	servo-250 \
 	io \
 	ganymede \
 
+LOCAL_TASKS := quad-dbg quad-receiver-dbg failsafe-tsk
 
-LOCAL_TASKS := quad-dbg failsafe-tsk quad-receiver-dbg
+# for printing floats
+LOCAL_LDFLAGS := -Wl,-u,vfprintf -lprintf_flt
 
 LOCAL_TARGET := atmega168
 include $(BUILD_EXEC)

@@ -73,11 +73,11 @@ static void io_i2c_isr()
 
         case TW_MR_SLA_ACK:
             // assert tx->isw == 0
-            if (1 == (io_i2c.tx->len-io_i2c.tx->off)) { // last byte
-                twi_send();
+            if (io_i2c.tx->off < (io_i2c.tx->len-1)) {
+                twi_send_ack();
             }
             else {
-                twi_send_ack();
+                twi_send(); // last byte
             }
             break;
 
@@ -106,32 +106,24 @@ void io_i2c_master_init()
 
 void io_i2c_tx_begin(uint8_t slave_addr)
 {
-    platform_cli();
-
     gmd_wfe(&io_i2c.is_used, 0xFF, 1, 0);
 
     io_i2c.is_used = 1;
     io_i2c.slave_addr = slave_addr;
-
-    platform_sei();
 }
 
 void io_i2c_tx_end()
 {
-    platform_cli();
     io_i2c.is_used = 0;
-    platform_sei();
 }
 
 
 void io_i2c_master_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
 {
-    platform_cli();
     io_i2c.tx = tx;
     io_i2c.num = n;
     io_i2c.is_done = 0;
-    platform_sei();
-
+    
     twi_send_start();
 
     gmd_wfe(&io_i2c.is_done, 0xFF, 0, timeout_ms);

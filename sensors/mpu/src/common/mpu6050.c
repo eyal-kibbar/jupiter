@@ -399,7 +399,7 @@ void mpu_ypr(float ypr[3])
     mpu_data_t data;
     uint8_t batch_idx, sz;
     uint16_t sample_cnt;
-    float accel_angles[3];
+    float accel_angles[2];
     float gyro_angles[3];
     float yaw_sin, pitch, roll;
 

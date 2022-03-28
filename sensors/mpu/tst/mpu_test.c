@@ -35,7 +35,7 @@ void loop()
 {
 
     io_tx_t tx[] = {
-        { .mode = IO_TX_MODE_W, .off = 0, .len = 2, .buf = "\r"},
+        { .mode = IO_TX_MODE_W, .off = 0, .len = 2, .buf = "\n\r"},
         { .mode = IO_TX_MODE_W, .off = 0, .len = sizeof s, .buf = s},
     };
 

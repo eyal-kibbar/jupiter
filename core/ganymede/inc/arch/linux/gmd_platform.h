@@ -8,6 +8,7 @@
 #define platform_isei() 1
 
 #define GMD_SCHED_CONTEXT_SIZE (sizeof(ucontext_t))
+#define GMD_SCHED_STACK_SIZE 1024
 
 //#define likely(x)       __builtin_expect((x),1)
 //#define unlikely(x)     __builtin_expect((x),0)

@@ -36,6 +36,7 @@ struct task_s {
 
 typedef struct sched_s {
     task_t scheduler;
+    uint8_t sched_stack[GMD_SCHED_STACK_SIZE];
     task_t* first;
     task_t* curr;
 } sched_t;
@@ -66,49 +67,11 @@ static void task_start(void)
     }
 }
 
-void gmd_sched_init()
-{
-    task_t* task;
-    extern char __start_tasks[];
-    extern char __stop_tasks[];
-
-    gmd_sched.first = (task_t*)__start_tasks;
-
-    for (task = gmd_sched.first; task; task = (task_t*)task->next) {
-
-        if (GMD_MAGIC != task->data.magic) {
-            gmd_panic();
-        }
-
-        gmd_platform_context_create((sched_context_t)task->ctx,
-                task_start,
-                (void*)((uint8_t*)task + sizeof(task_t)),
-                (size_t)task->data.stack_size - sizeof(task_t));
-
-        task->next = (task_t*)((uintptr_t)task + (uintptr_t)task->data.stack_size);
-
-
-        if (NULL != task->data.setup_func) {
-            task->data.setup_func();
-        }
-
-        task->state = TASK_STATE_IDLE;
-
-        if (task->next == (task_t*)__stop_tasks) {
-            task->next = NULL;
-        }
-    }
-    gmd_sched.curr = &gmd_sched.scheduler;
-    gmd_sched.curr->state = TASK_STATE_RUNNING;
-}
-
-void gmd_sched_loop()
+static void gmd_sched_loop()
 {
     task_t* task;
     uint8_t maysleep;
     uint8_t curtick;
-
-
 
     // run all idle tasks
     for (task = gmd_sched.first; task; task = task->next) {
@@ -151,6 +114,59 @@ void gmd_sched_loop()
         platform_sei();
     }
 }
+
+void gmd_sched_init()
+{
+    task_t* task;
+    extern char __start_tasks[];
+    extern char __stop_tasks[];
+
+    gmd_sched.first = (task_t*)__start_tasks;
+
+    for (task = gmd_sched.first; task; task = (task_t*)task->next) {
+
+        if (GMD_MAGIC != task->data.magic) {
+            gmd_panic();
+        }
+
+        gmd_platform_context_create((sched_context_t)task->ctx,
+                task_start,
+                (void*)((uint8_t*)task + sizeof(task_t)),
+                (size_t)task->data.stack_size - sizeof(task_t));
+
+        task->next = (task_t*)((uintptr_t)task + (uintptr_t)task->data.stack_size);
+
+
+        if (NULL != task->data.setup_func) {
+            task->data.setup_func();
+        }
+
+        task->state = TASK_STATE_IDLE;
+
+        if (task->next == (task_t*)__stop_tasks) {
+            task->next = NULL;
+        }
+    }
+
+    // initialize the scheduler task
+    gmd_platform_context_create((sched_context_t)gmd_sched.scheduler.ctx,
+        task_start,
+        (void*)gmd_sched.sched_stack,
+        sizeof gmd_sched.sched_stack);
+    //gmd_sched.scheduler.data.init_func = <> TODO: if sched needs additional initialization function, add it here
+    gmd_sched.scheduler.data.loop_func = gmd_sched_loop;
+
+
+    gmd_sched.curr = &gmd_sched.scheduler;
+    gmd_sched.curr->state = TASK_STATE_IDLE;
+}
+
+void gmd_sched_start()
+{
+    gmd_sched.scheduler.state = TASK_STATE_RUNNING;
+    gmd_platform_context_load((sched_context_t)gmd_sched.scheduler.ctx);
+}
+
 
 uint16_t gmd_wfe(volatile uint8_t* p_event, uint8_t mask, uint8_t event, uint16_t timeout_ms)
 {

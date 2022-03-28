@@ -17,7 +17,7 @@ int main()
     gmd_sched_init();
     platform_sei();
 
-    while (1) gmd_sched_loop();
+    gmd_sched_start();
 
     return 0;
 }

@@ -44,6 +44,12 @@ void gmd_platform_context_create(
     ctx->pc = (uint16_t)func;
 }
 
+void gmd_platform_context_load(
+    sched_context_t load)
+{
+    longjmp(*(jmp_buf*)load, 1);
+}
+
 void gmd_platform_context_swap(
     sched_context_t save,
     sched_context_t load)
@@ -140,6 +146,7 @@ ISR(TIMER2_OVF_vect)
 
 #define		wdr()	asm("wdr"::)
 
+/* stack size calculation does not support naked functions
 __attribute__((naked))
 __attribute__((section(".init3")))
  void watchdog_reset(void)
@@ -147,6 +154,9 @@ __attribute__((section(".init3")))
     wdr();
     wdt_disable();
 }
+*/
+
+void watchdog_reset(void) {}
 
 void gmd_wdg_reset()
 {

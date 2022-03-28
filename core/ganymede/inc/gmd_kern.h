@@ -2,7 +2,6 @@
 #define GMD_KERN_H_
 
 void gmd_platform_init();
-void gmd_panic();
 
 void gmd_wdg_reset();
 

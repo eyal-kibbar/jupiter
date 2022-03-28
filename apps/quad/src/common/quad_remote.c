@@ -51,6 +51,7 @@ void init()
 
     nrf_init(&cfg);
 
+    LOG_INFO(QUAD_REMOTE, "quad remote");
 
     nrf_send_open_pipe("abcde", 5);
     nrf_send_set();

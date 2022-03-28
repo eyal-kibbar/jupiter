@@ -5,21 +5,17 @@
 
 enum quad_state_e {
     QUAD_INIT,
+    QUAD_READY,
     QUAD_BALANCING
 };
 
 struct quad_s {
-    enum quad_state_e state;
+    volatile uint8_t state;
 
     float setpoint[3];
     float throtte;
 
-    float angles[3];
-    float dt;
     int16_t motor[4];
-
-    uint16_t timer_us;
-    uint16_t timer_ms;
 
     pid_config_t pid_cfg;
     pid_config_t pid_yaw_cfg;
@@ -27,10 +23,9 @@ struct quad_s {
     pid_state_t pid_roll_state;
     pid_state_t pid_pitch_state;
     pid_state_t pid_yaw_state;
-
-    uint8_t pid_update;
 };
 
+extern struct quad_s quad;
 
 void quad_start();
 void quad_stop();

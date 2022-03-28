@@ -31,6 +31,9 @@ void init()
     nrf_recv_open_pipe(1, "abcde", 5);
     nrf_recv_set();
     //nrf_test();
+
+    gmd_wfe(&quad.state, ~0, QUAD_INIT, 0); // wait for quad to be ready
+    LOG_INFO(QUAD_RECV, "recv ready");
 }
 
 float map(float v, float vmin, float vmax, float omin, float omax)
@@ -40,7 +43,7 @@ float map(float v, float vmin, float vmax, float omin, float omax)
     return (v * a) + b;
 }
 
-extern struct quad_s quad;
+
 uint8_t last_cmd = 0;
 
 void loop()
@@ -57,8 +60,9 @@ void loop()
 
     memset(&resp_pkt, 0, sizeof resp_pkt);
 
-    // set the respose packet
-    quad_angles_get(resp_pkt.angles, &resp_pkt.dt);
+    // TODO: set the respose packet
+
+
     //quad_get_servo_microseconds(resp_pkt.motor);
     resp_pkt.pid_cfg_kp = quad.pid_cfg.kp;
     resp_pkt.pid_cfg_ki = quad.pid_cfg.ki;

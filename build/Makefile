@@ -45,7 +45,7 @@ BUILD_GMD_TASK   := $(BUILD_DIR)/jupiter_build_gmd_task.mk
 CHECK_LOCALS     := $(BUILD_DIR)/jupiter_check.mk
 
 
-CFLAGS := -g
+CFLAGS := -g -fstack-usage 
 
 
 include $(ROOT_PATH)/app.mk

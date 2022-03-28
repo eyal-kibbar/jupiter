@@ -9,7 +9,7 @@ static int io_logging_uart_putchar(char c, FILE *stream)
     log_buffer[log_buffer_idx++] = (uint8_t)c;
 
     // flush
-    if (c == '\n' || LOG_BUFFER_SIZE == log_buffer_idx) {
+    if (c == '\r' || LOG_BUFFER_SIZE == log_buffer_idx) {
         io_tx_t tx = {
             .mode = IO_TX_MODE_W,
             .buf = (uint8_t*)log_buffer,

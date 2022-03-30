@@ -12,11 +12,15 @@
 #include <math.h>
 
 #include "servo.h"
-
+#include "ganymede.h"
+#include "io.h"
 
 void setup()
 {
-    DDRB = 0b00000000;
+    io_uart_init(0, 57600);
+    io_logging_init();
+
+    //DDRB = 0b00000000;
     //PORTB = 0b00000001;
     //DDRD = 0xC;
     //PORTD = _BV(2);
@@ -116,32 +120,13 @@ int swuart_recv(uint8_t* buff, uint8_t len)
 }
 
 
+int i;
 
 void loop()
 {
-    //const char* n = "eyal\n\r";
-    char n[1];
-    int ret;
-    flag = 0;
-    //LOG_INFO(test, "testing 123");
+    LOG_INFO(TEST, "testing %d", i++);
 
-
-    //PORTB = 0b0000001;
-    //gmd_delay(1000);
-    ret = swuart_recv(( uint8_t*)n, sizeof n);
-    LOG_INFO(test, "got: %c %d", n[0], ret);
-    //PORTB = 0b00000000;
-    gmd_delay(5000);
-
-
-
-    //EIMSK = _BV(INT0);
-    //gmd_wfe(&flag, 0x2, 0);
-    //flag = 0;
-    //if (PIND & 0xC) {
-    //    LOG_INFO(TEST, "int: %x", PIND & 0xC);
-    //}
-
+    gmd_delay(1000);
 }
 
 

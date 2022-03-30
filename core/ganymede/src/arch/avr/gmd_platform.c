@@ -64,15 +64,24 @@ void gmd_platform_context_swap(
  * ========================================
  **/
 
-void gmd_platform_sleep()
+void gmd_platform_sleep(uint8_t flags)
 {
     cli();
 
     // disable ADC when sleeping
     //ADCSRA = 0;
+    //set_sleep_mode(SLEEP_MODE_IDLE);
 
-    // TODO: calculate the best sleep mode
-    set_sleep_mode(SLEEP_MODE_IDLE);
+
+    if (flags & (GMD_SLEEP_F_IO)) {
+        set_sleep_mode(SLEEP_MODE_IDLE);
+    }
+    else if (flags & GMD_SLEEP_F_CLK) {
+        set_sleep_mode(SLEEP_MODE_PWR_SAVE);
+    }
+    else {
+        set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    }
 
     sleep_enable();
     sei();
@@ -87,6 +96,7 @@ void gmd_platform_sleep()
 
 static void gmd_platform_timer_init()
 {
+    PRR &= ~(_BV(PRTIM2));
     ASSR = _BV(AS2); // set clock to function as realtime hardware clock (RTC)
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // set clock with 1024 prescalar
     TIMSK2 = _BV(TOIE2); // enable overflow interrupt
@@ -170,6 +180,6 @@ void gmd_platform_init()
     wdt_enable(WDTO_1S);
 #endif
     //WDTCSR = _BV(WDE) | _BV(WDP3);
-
+    PRR = ~0; // shut down all systems for power saving
     gmd_platform_timer_init();
 }

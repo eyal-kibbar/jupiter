@@ -73,24 +73,18 @@ IO_SPI_ISR()
 void io_spi_tx_begin(uint8_t slave_select_pin)
 {
     // select slave
-    platform_cli();
-
     gmd_wfe(&spi_sg.is_used, 0xFF, 1, 0);
 
     spi_sg.slave_select_pin = slave_select_pin;
     spi_sg.is_used = 1;
 
     io_pin_clr(slave_select_pin);
-
-    platform_sei();
 }
 
 void io_spi_tx_end()
 {
-    platform_cli();
     spi_sg.is_used = 0;
     io_pin_set(spi_sg.slave_select_pin);
-    platform_sei();
 }
 
 void io_spi_master_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
@@ -101,7 +95,6 @@ void io_spi_master_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
         return;
     }
 
-    platform_cli();
     // initialize transactions struct
     spi_sg.tx = tx;
     spi_sg.num = n;
@@ -116,8 +109,7 @@ void io_spi_master_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
     spi_set_data(data);
 
     // wait until all transactions are complete
-    gmd_wfe(&spi_sg.is_done, 0xFF, 0, timeout_ms);
-    platform_sei();
+    gmd_wfe_io(&spi_sg.is_done, 0xFF, 0, timeout_ms);
 }
 
 void io_spi_slave_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
@@ -130,8 +122,6 @@ void io_spi_slave_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
     if (0 == n) {
         return;
     }
-
-    platform_cli();
 
     // initialize transactions struct
     spi_sg.tx = tx;
@@ -147,7 +137,7 @@ void io_spi_slave_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
     spi_set_data(data);
 
     // wait for select slave to be low
-    slept_ms = gmd_wfe(&PIN_SPI, _BV(DD_SS), _BV(DD_SS), remaining_timeout_ms);
+    slept_ms = gmd_wfe_io(&PIN_SPI, _BV(DD_SS), _BV(DD_SS), remaining_timeout_ms);
     if (0 != timeout_ms) {
         if (remaining_timeout_ms <= slept_ms) {
             return;
@@ -157,10 +147,8 @@ void io_spi_slave_sg(io_tx_t *tx, uint8_t n, uint16_t timeout_ms)
     }
 
     // wait until master resets the connection by setting SS to high
-    gmd_wfe(&PIN_SPI, _BV(DD_SS), 0, remaining_timeout_ms);
+    gmd_wfe_io(&PIN_SPI, _BV(DD_SS), 0, remaining_timeout_ms);
 
     spi_sg.is_used = 0;
-
-    platform_sei();
 
 }

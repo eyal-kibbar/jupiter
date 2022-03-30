@@ -3,6 +3,8 @@
 
 void io_i2c_master_platform_init()
 {
+    // enabling power to TWI
+    PRR &= ~(_BV(PRTWI));
     // setting 400KHz
     TWSR = 0;
     TWBR = 12;

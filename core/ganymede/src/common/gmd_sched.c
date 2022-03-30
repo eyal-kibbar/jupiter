@@ -8,6 +8,7 @@
 
 #define WAITING_TICK  0x01
 #define WAITING_EVENT 0x02
+#define WAITING_IO    0x04
 
 #define GMD_IS_EVENT_CHANGED(p_event, mask, event) (((*p_event) & (mask)) != ((event) & (mask)))
 
@@ -72,7 +73,7 @@ static void gmd_sched_loop()
     task_t* task;
     uint8_t maysleep;
     uint8_t curtick;
-
+    uint8_t sleep_flags;
     // run all idle tasks
     for (task = gmd_sched.first; task; task = task->next) {
         gmd_wdg_reset();
@@ -85,6 +86,7 @@ static void gmd_sched_loop()
 
     // wakeup all sleeping tasks
     maysleep = 1;
+    sleep_flags = 0;
     curtick = gmd_curtick();
 
     // clear interrupt before checking for events.
@@ -95,12 +97,21 @@ static void gmd_sched_loop()
 
         if (TASK_STATE_WAITING == task->state) {
 
-            if ( (task->waiting & WAITING_TICK  && curtick != task->sleep_tick) ||
-                 (task->waiting & WAITING_EVENT && GMD_IS_EVENT_CHANGED(task->p_event, task->event_mask, task->event)) ) {
+            if (task->waiting & WAITING_TICK) {
+                sleep_flags |= GMD_SLEEP_F_CLK;
 
-                 task->state = TASK_STATE_IDLE;
-             }
+                if (curtick != task->sleep_tick) {
+                    task->state = TASK_STATE_IDLE;
+                }
+            }
 
+            if (task->waiting & WAITING_EVENT && GMD_IS_EVENT_CHANGED(task->p_event, task->event_mask, task->event)) {
+                task->state = TASK_STATE_IDLE;
+            }
+
+            if (task->waiting & WAITING_IO) {
+                sleep_flags |= GMD_SLEEP_F_IO;
+            }
         }
 
         // stop sleeping if an idle task is encountered
@@ -108,7 +119,7 @@ static void gmd_sched_loop()
     }
     gmd_wdg_reset();
     if (maysleep) {
-        gmd_platform_sleep();
+        gmd_platform_sleep(sleep_flags);
     }
     else {
         platform_sei();
@@ -167,8 +178,7 @@ void gmd_sched_start()
     gmd_platform_context_load((sched_context_t)gmd_sched.scheduler.ctx);
 }
 
-
-uint16_t gmd_wfe(volatile uint8_t* p_event, uint8_t mask, uint8_t event, uint16_t timeout_ms)
+static uint16_t gmd_wfe_aux(volatile uint8_t* p_event, uint8_t mask, uint8_t event, uint16_t timeout_ms, uint8_t flags)
 {
     uint8_t before_tick, tick, nticks;
     uint16_t us, carry_us = 0, sleeping_ms = 0;
@@ -182,6 +192,10 @@ uint16_t gmd_wfe(volatile uint8_t* p_event, uint8_t mask, uint8_t event, uint16_
     gmd_sched.curr->p_event    = p_event;
     gmd_sched.curr->event      = event;
     gmd_sched.curr->event_mask = mask;
+
+    if (flags) {
+        gmd_sched.curr->waiting |= WAITING_IO;
+    }
 
     if (0 == timeout_ms) {
         gmd_sched.curr->state = TASK_STATE_WAITING;
@@ -213,6 +227,16 @@ uint16_t gmd_wfe(volatile uint8_t* p_event, uint8_t mask, uint8_t event, uint16_
 
 
     return sleeping_ms;
+}
+
+uint16_t gmd_wfe(volatile uint8_t* p_event, uint8_t mask, uint8_t event, uint16_t timeout_ms)
+{
+    return gmd_wfe_aux(p_event, mask, event, timeout_ms, 0);
+}
+
+uint16_t gmd_wfe_io(volatile uint8_t* p_event, uint8_t mask, uint8_t event, uint16_t timeout_ms)
+{
+    return gmd_wfe_aux(p_event, mask, event, timeout_ms, 1);
 }
 
 uint16_t gmd_delay(uint16_t ms)

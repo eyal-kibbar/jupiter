@@ -67,12 +67,10 @@ void init()
 #ifndef DEBUG
     gmd_delay(5000);
 #endif
+
+    //LOG_INFO(QUAD, "mpu init");
     mpu_init();
 
-    // initialize 8bit clock with 1024 prescaler
-    // this gives us a 64 microseconds per tick: (16Mhz/1024)^-1
-    TCCR2B = _BV(CS22) | _BV(CS11) | _BV(CS10);
-    TCNT2 = 0;
 
     LOG_INFO(QUAD, "calibrating MPU");
     mpu_calibrate();
@@ -137,11 +135,8 @@ static void quad_mixer(float pid_output[3], float pid_throttle)
 
 
 }
-
-
 char s[80];
-uint16_t i;
-uint16_t t;
+
 void loop()
 {
     float ypr[3];
@@ -155,9 +150,7 @@ void loop()
     failsafe_reset(0);
 
 
-    TCNT1 = 0; t = 0;
     mpu_ypr(ypr);
-    t = TCNT1;
 
     //LOG_INFO(QUAD, "(%03d, %03d, %03d)", (int16_t)ypr[0], (int16_t)ypr[1], (int16_t)ypr[2]);
 
@@ -172,11 +165,14 @@ void loop()
 
 
 #ifdef DEBUG
-    snprintf(s, sizeof(s)-1, "(%03.02f, %03.02f, %03.02f)  %d ,%d,%d,%d,%d  \n\r",
-        ypr[0], ypr[1], ypr[2], t,
-        quad.motor[0], quad.motor[1], quad.motor[2], quad.motor[3]
-    );
-    io_uart_sg(0, tx, ARR_SIZE(tx), 0);
+    {
+
+        snprintf(s, sizeof(s)-1, "(%03.02f, %03.02f, %03.02f) ,%d,%d,%d,%d  \n\r",
+            ypr[0], ypr[1], ypr[2],
+            quad.motor[0], quad.motor[1], quad.motor[2], quad.motor[3]
+        );
+        io_uart_sg(0, tx, ARR_SIZE(tx), 0);
+    }
 #endif
 
 

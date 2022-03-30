@@ -21,12 +21,15 @@ void setup()
 void init()
 {
     mpu_init();
+
     // initialize 16bit clock with 64 prescaler
     // this gives us a 4 microseconds per tick: (16Mhz/64)^-1
+    PRR &= ~(_BV(PRTIM1));
     TCCR1B = _BV(CS11) | _BV(CS10);
     TCNT1 = 0;
-
+    LOG_INFO(MPU_TEST, "calibrating");
     mpu_calibrate();
+    LOG_INFO(MPU_TEST, "done");
 }
 
 

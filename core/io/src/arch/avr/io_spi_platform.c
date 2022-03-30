@@ -15,6 +15,8 @@ void io_spi_master_platform_init()
 
 void io_spi_slave_platform_init()
 {
+    PRR &= ~(_BV(PRSPI));
+    
     DDR_SPI |= _BV(DD_MISO);
     SPCR = _BV(SPIE) | _BV(SPE);
 }

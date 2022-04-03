@@ -356,7 +356,7 @@ static void mpu_pipe_read_aux(struct mpu_fifo_pkt_s *pkt_arr, uint8_t *sz)
     fifo_sz = mpu_regread16(MPU_FIFO_COUNT_ADDR);
     fifo_sz = (int16_t)ntohs(fifo_sz);
 
-    if (0 == fifo_sz) {
+    if (fifo_sz < sizeof(struct mpu_fifo_pkt_s)) {
         *sz = 0;
         return;
     }
@@ -392,13 +392,11 @@ void mpu_pipe_read(mpu_rawdata_t* rawdata_arr, uint8_t* sz)
         rawdata_arr[i].gyro[2] = ntohs(buff[i].gyro[2]);
     }
 }
-
 void mpu_ypr(float ypr[3])
 {
     mpu_rawdata_t rawdata[4];
     mpu_data_t data;
     uint8_t batch_idx, sz;
-    uint16_t sample_cnt;
     float accel_angles[2];
     float gyro_angles[3];
     float yaw_sin, pitch, roll;

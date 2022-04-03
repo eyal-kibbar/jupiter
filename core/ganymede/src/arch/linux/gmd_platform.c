@@ -39,12 +39,16 @@ void gmd_platform_context_swap(
     swapcontext(&save->uctx, &load->uctx);
 }
 
+void gmd_platform_context_load(sched_context_t load)
+{
+    setcontext(&load->uctx);
+}
 /**
  * sleep
  * ========================================
  **/
 
-void gmd_platform_sleep()
+void gmd_platform_sleep(uint8_t sleep_flags)
 {
     struct timespec t;
     t.tv_sec = 0;
@@ -80,7 +84,7 @@ uint16_t gmd_ms2ticks(uint16_t ms, uint16_t* out_us)
 
 void gmd_wdg_reset()
 {
-    
+
 }
 /**
  * log

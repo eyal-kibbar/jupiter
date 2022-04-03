@@ -86,7 +86,7 @@ static void gmd_sched_loop()
 
     // wakeup all sleeping tasks
     maysleep = 1;
-    sleep_flags = 0;
+    sleep_flags = gmd_sched.scheduler.waiting;
     curtick = gmd_curtick();
 
     // clear interrupt before checking for events.
@@ -249,4 +249,9 @@ uint16_t gmd_delay(uint16_t ms)
     }
 
     return gmd_wfe(&no_evt, 0, 0, ms);
+}
+
+void gmd_pwr_require(uint8_t sleep_flags)
+{
+    gmd_sched.scheduler.waiting |= sleep_flags;
 }

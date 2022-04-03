@@ -1,11 +1,11 @@
 #include "io_spi_platform.h"
-
+#include <avr/power.h>
 
 
 
 void io_spi_master_platform_init()
 {
-    PRR &= ~(_BV(PRSPI));
+    power_spi_enable();
 
     DDR_SPI = _BV(DD_MOSI) | _BV(DD_SCK) | _BV(DD_SS);
     SPCR = _BV(SPIE) | _BV(SPE) | _BV(MSTR)
@@ -15,8 +15,8 @@ void io_spi_master_platform_init()
 
 void io_spi_slave_platform_init()
 {
-    PRR &= ~(_BV(PRSPI));
-    
+    power_spi_enable();
+
     DDR_SPI |= _BV(DD_MISO);
     SPCR = _BV(SPIE) | _BV(SPE);
 }

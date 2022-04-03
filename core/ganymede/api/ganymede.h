@@ -38,6 +38,11 @@ void init() __attribute__((weak));
         } \
     }
 
+
+#define GMD_SLEEP_F_IO  0x1
+#define GMD_SLEEP_F_CLK 0x2
+
+
 uint16_t gmd_delay(uint16_t ms);
 
 /**
@@ -46,6 +51,8 @@ uint16_t gmd_delay(uint16_t ms);
  */
 uint16_t gmd_wfe(volatile uint8_t* p_event, uint8_t mask, uint8_t event, uint16_t timeout_ms);
 uint16_t gmd_wfe_io(volatile uint8_t* p_event, uint8_t mask, uint8_t event, uint16_t timeout_ms);
+
+void gmd_pwr_require(uint8_t sleep_flags);
 
 uint8_t  gmd_curtick();
 uint16_t gmd_ticks2ms(uint8_t ticks, uint16_t* out_us);

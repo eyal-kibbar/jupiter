@@ -3,6 +3,7 @@
 #include "io_platform.h"
 #include "servo_platform.h"
 #include "logging.h"
+#include "ganymede.h"
 
 #define SERVO_MIN_ISR_US 10
 #define SERVO_MIN_CYCLE_ISR_US 50
@@ -34,6 +35,7 @@ volatile static struct servo_t servo;
 void servo_init(void)
 {
     servo_platform_init();
+    gmd_pwr_require(GMD_SLEEP_F_CLK|GMD_SLEEP_F_IO);
 }
 
 // CTC mode, 2 types of interrupts:

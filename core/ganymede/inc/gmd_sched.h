@@ -5,8 +5,6 @@
 #include <stddef.h>
 #include "gmd_platform.h"
 
-#define GMD_SLEEP_F_IO  0x1
-#define GMD_SLEEP_F_CLK 0x2
 
 typedef struct sched_context_s* sched_context_t;
 

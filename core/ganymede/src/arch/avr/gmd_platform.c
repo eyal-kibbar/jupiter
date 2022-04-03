@@ -13,6 +13,7 @@
 #include <avr/interrupt.h>
 
 #include <avr/wdt.h>
+#include <avr/power.h>
 
 struct sched_context_s {
     uint8_t  regs[16];
@@ -70,10 +71,9 @@ void gmd_platform_sleep(uint8_t flags)
 
     // disable ADC when sleeping
     //ADCSRA = 0;
-    //set_sleep_mode(SLEEP_MODE_IDLE);
 
-
-    if (flags & (GMD_SLEEP_F_IO)) {
+#ifdef GMD_POWER_SAVE_ENABLED
+    if (flags & GMD_SLEEP_F_IO) {
         set_sleep_mode(SLEEP_MODE_IDLE);
     }
     else if (flags & GMD_SLEEP_F_CLK) {
@@ -82,6 +82,9 @@ void gmd_platform_sleep(uint8_t flags)
     else {
         set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     }
+#else
+    set_sleep_mode(SLEEP_MODE_IDLE);
+#endif /* GMD_POWER_SAVE_ENABLED */
 
     sleep_enable();
     sei();
@@ -96,7 +99,8 @@ void gmd_platform_sleep(uint8_t flags)
 
 static void gmd_platform_timer_init()
 {
-    PRR &= ~(_BV(PRTIM2));
+    power_timer2_enable();
+
     ASSR = _BV(AS2); // set clock to function as realtime hardware clock (RTC)
     TCCR2B = _BV(CS22) | _BV(CS21) | _BV(CS20); // set clock with 1024 prescalar
     TIMSK2 = _BV(TOIE2); // enable overflow interrupt
@@ -180,6 +184,9 @@ void gmd_platform_init()
     wdt_enable(WDTO_1S);
 #endif
     //WDTCSR = _BV(WDE) | _BV(WDP3);
-    PRR = ~0; // shut down all systems for power saving
+
+#ifdef GMD_POWER_SAVE_ENABLED
+    power_all_disable(); // shut down all systems for power saving
+#endif
     gmd_platform_timer_init();
 }

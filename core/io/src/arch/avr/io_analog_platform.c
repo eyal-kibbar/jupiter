@@ -3,12 +3,13 @@
 #include <avr/io.h>
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
+#include <avr/power.h>
 
 static uint8_t adcsra;
 
 void io_analog_init()
 {
-    PRR &= ~(_BV(PRADC));
+    power_adc_enable();
 
 #if F_CPU >= 16000000 // 16 MHz / 128 = 125 KHz
     adcsra = _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0);

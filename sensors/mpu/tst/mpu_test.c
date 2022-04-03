@@ -6,6 +6,7 @@
 #include "math.h"
 #include <avr/io.h>
 #include "utils.h"
+#include <avr/power.h>
 
 char s[80];
 uint16_t t;
@@ -24,7 +25,8 @@ void init()
 
     // initialize 16bit clock with 64 prescaler
     // this gives us a 4 microseconds per tick: (16Mhz/64)^-1
-    PRR &= ~(_BV(PRTIM1));
+    power_timer1_enable();
+
     TCCR1B = _BV(CS11) | _BV(CS10);
     TCNT1 = 0;
     LOG_INFO(MPU_TEST, "calibrating");

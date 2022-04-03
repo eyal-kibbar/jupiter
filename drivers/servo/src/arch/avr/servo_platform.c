@@ -5,13 +5,14 @@
 #include <avr/interrupt.h>
 #include "io_platform.h"
 #include "logging.h"
+#include <avr/power.h>
 
 #define SERVO_CLK_PRESCALER 8
 
 void servo_platform_init()
 {
-    PRR &= ~(_BV(PRTIM1));
-    
+    power_timer1_enable();
+
     OCR1A  = ((F_CPU / SERVO_CLK_PRESCALER) / SERVO_CYCLE_FREQ) - 1;
     TCCR1B = _BV(WGM12) | _BV(CS11); // set CTC OCR1A mode, 8 prescaler
     OCR1B  = 0xFFFF; // avoid having an update interrupt

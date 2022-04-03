@@ -1,6 +1,6 @@
 #include "io.h"
 #include "io_uart_platform.h"
-
+#include <avr/power.h>
 
 //256000
 void io_uart_platform_init(uint16_t baud_rate)
@@ -8,7 +8,7 @@ void io_uart_platform_init(uint16_t baud_rate)
     uint16_t baud_encoded =  (uint16_t)(((F_CPU / 16UL) / baud_rate) - 1);
 
 #if UART_CORE_INDEX == 0
-    PRR &= ~(_BV(PRUSART0));
+    power_usart0_enable();
 #endif
 
     UART_CORE_REG(UBRR,H) = (uint8_t)(baud_encoded >> 0x8);

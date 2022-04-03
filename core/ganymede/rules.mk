@@ -17,7 +17,8 @@ COMMON_INC := $(LOCAL_PATH)/inc
 COMMON_API := $(LOCAL_PATH)/api
 
 COMMON_DEFINES := \
-	GANYMEDE 
+	GANYMEDE \
+	GMD_POWER_SAVE_ENABLED
 
 
 include $(LOCAL_PATH)/build/debug.mk

@@ -111,6 +111,7 @@ void loop()
     //LOG_INFO(QUAD_REMOTE, "sending switches: %02x left: %d right: %d ", pkt.switches, pkt.j_left_y, pkt.j_right_y);
     if ((rc = nrf_send((uint8_t*)&pkt, sizeof(pkt)))) {
         io_pin_clr(LED_PIN);
+        LOG_INFO(QUAD_REMOTE, "send failed: %d", rc);
         return;
     }
 

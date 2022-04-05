@@ -15,5 +15,6 @@ typedef struct pid_state_s {
 } pid_state_t;
 
 float pid_step(pid_config_t* cfg, pid_state_t* state, float input, float setpoint);
+float interp(float v, float vmin, float vmax, float omin, float omax);
 
 #endif /* PID_H_ */

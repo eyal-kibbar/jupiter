@@ -1,37 +1,5 @@
 
 
-
-
-# ========================================
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := pid-dbg
-
-LOCAL_DEFINES := \
-	LOG_LEVEL=3
-
-LOCAL_EXPORT := $(LOCAL_PATH)/api
-
-LOCAL_SRC := \
-	$(LOCAL_PATH)/src/common/pid.c
-
-LOCAL_INC := \
-	$(LOCAL_PATH)/inc
-
-LOCAL_EXPORT := $(LOCAL_PATH)/api
-
-LOCAL_STATIC_LIBS := \
-	ganymede-dbg
-
-LOCAL_TARGET := atmega168
-include $(BUILD_STATIC_LIB)
-
-LOCAL_TARGET := atmega328p
-include $(BUILD_STATIC_LIB)
-
-
-
-
 # ========================================
 include $(CLEAR_VARS)
 
@@ -91,6 +59,7 @@ LOCAL_INC := \
 LOCAL_EXPORT := $(LOCAL_PATH)/api
 
 LOCAL_STATIC_LIBS := \
+	pid-dbg \
 	spi-dbg \
 	uart-dbg \
 	logging \

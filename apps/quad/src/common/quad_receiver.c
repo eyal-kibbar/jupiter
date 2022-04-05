@@ -36,12 +36,7 @@ void init()
     LOG_INFO(QUAD_RECV, "recv ready");
 }
 
-float map(float v, float vmin, float vmax, float omin, float omax)
-{
-    float a = (omax - omin) / (vmax - vmin);
-    float b = omax - a * vmax;
-    return (v * a) + b;
-}
+
 
 
 uint8_t last_cmd = 0;
@@ -82,11 +77,11 @@ void loop()
         quad_stop();
     }
 
-    setpoint[0] = map(pkt.j_right_x, 0, 1023, -10, +10);
-    setpoint[1] = map(pkt.j_right_y, 0, 1023, -10, +10);
-    setpoint[2] = map(pkt.j_left_x,  0, 1023, -180, +180);
+    setpoint[0] = interp(pkt.j_right_x, 0, 1023, -20, +20);
+    setpoint[1] = interp(pkt.j_right_y, 0, 1023, -20, +20);
+    setpoint[2] = interp(pkt.j_left_x,  0, 1023, -180, +180);
 
-    throttel = map(pkt.j_left_y, 0, 1024, 0, 1);
+    throttel = interp(pkt.j_left_y, 0, 1024, 0, 1);
 
     quad_set_setpoint(setpoint, throttel);
 

@@ -15,6 +15,7 @@ include $(ROOT_PATH)/drivers/swuart/rules.mk
 include $(ROOT_PATH)/libs/clk/rules.mk
 include $(ROOT_PATH)/libs/srv/rules.mk
 include $(ROOT_PATH)/libs/failsafe/rules.mk
+include $(ROOT_PATH)/libs/pid/rules.mk
 
 # sensors
 include $(ROOT_PATH)/sensors/barometer/rules.mk
@@ -29,3 +30,4 @@ include $(ROOT_PATH)/apps/test/rules.mk
 include $(ROOT_PATH)/apps/rc_keyboard/rules.mk
 include $(ROOT_PATH)/apps/radio/rules.mk
 include $(ROOT_PATH)/apps/quad/rules.mk
+

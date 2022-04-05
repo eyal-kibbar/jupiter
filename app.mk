@@ -30,4 +30,4 @@ include $(ROOT_PATH)/apps/test/rules.mk
 include $(ROOT_PATH)/apps/rc_keyboard/rules.mk
 include $(ROOT_PATH)/apps/radio/rules.mk
 include $(ROOT_PATH)/apps/quad/rules.mk
-
+include $(ROOT_PATH)/apps/airplane/rules.mk
